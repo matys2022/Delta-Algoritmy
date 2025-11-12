@@ -1,7 +1,11 @@
-﻿class Program
+﻿using NodesImplementation;
+
+class Program
 {
     public static void Main(string[] args)
     {
-        
+        App app = new App();
+
+        app.run();
     }
 }
