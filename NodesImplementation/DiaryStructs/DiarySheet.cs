@@ -17,6 +17,13 @@ namespace NodesImplementation.DiaryStructs
             get => sheetTitle;
         }
 
+        private string sheetText;
+        public string SheetText
+        {
+            get => sheetText;
+            private set => sheetText = value;
+        }
+
         public DiarySheet(string sheetTitle)
         {
             this.sheetTitle = sheetTitle;

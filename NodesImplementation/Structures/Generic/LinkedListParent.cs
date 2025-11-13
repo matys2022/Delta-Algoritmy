@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace NodesImplementation.Structures
+namespace NodesImplementation.Structures.Generic
 {
     public class LinkedListParent<T> : IEnumerable<T>
     {
@@ -90,6 +90,11 @@ namespace NodesImplementation.Structures
             
         }
 
+        public void Remove(T item)
+        {
+            RemoveAt(GetNode(item).getIndex());
+        }
+
         public void RemoveAt(int index)
         {
             LinkedListNode<T>? foundNode = GetNodeAt(index);
@@ -143,6 +148,32 @@ namespace NodesImplementation.Structures
             }
 
             return currentNode;
+        }
+
+        private LinkedListNode<T> GetNode(T node)
+        {
+
+            LinkedListNode<T>? currentNode = firstNode;
+
+            if(currentNode == null)
+            throw new Exception("Collection doesn't contain any elements");
+            
+            
+            while(true){
+                if(currentNode == null)
+                {
+                    throw new Exception("Collection doesn't contain this element");
+                }
+
+                if(currentNode.Value?.Equals(node) ?? true)
+                {
+                    return currentNode;
+                }
+                else
+                {
+                    currentNode = currentNode.GetPreviousNode();
+                }
+            }
         }
 
         public T ElementAt(int index)
