@@ -8,14 +8,15 @@ using NodesImplementation.Structures;
 
 namespace NodesImplementation.DiaryStructs
 {
-
-
     public class Diary
     {
 
-        public void renderMenu()
+        public void renderMenu(IEnumerable<LabelShortCut> labelShortCuts)
         {
-
+            foreach(LabelShortCut labelShortCut in labelShortCuts)
+            {
+                Console.WriteLine($"{labelShortCut.shortCut.keyCombination} - {labelShortCut.hint}");
+            }
         }
         private void render()
         {
