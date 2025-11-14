@@ -18,9 +18,12 @@ namespace NodesImplementation.DiaryStructs
                 Console.WriteLine($"{labelShortCut.shortCut.keyCombination} - {labelShortCut.hint}");
             }
         }
-        private void render()
+        public void renderSheet(DiarySheet sheet)
         {
-
+            Console.WriteLine(sheet.GetCreationDate());
+            Console.WriteLine(sheet.SheetTitle);
+            Console.WriteLine(sheet.SheetText);
+            Console.WriteLine();
         }
     }
 }

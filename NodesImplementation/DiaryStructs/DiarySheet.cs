@@ -30,6 +30,11 @@ namespace NodesImplementation.DiaryStructs
             this.dateCreated = DateOnly.FromDateTime(DateTime.Today);
         }
 
+        public void SetText(string str)
+        {
+            sheetText = str;
+        }
+
         public string GetCreationDate()
         {
             return $"{dateCreated.Day}-{dateCreated.Month}-{dateCreated.Year}";           

@@ -18,7 +18,7 @@ namespace NodesImplementation.Structures.Generic
             set => lenght = value;
         }
 
-        private void IncreaseLength(int len = 1)
+        private void UpdateLength(int len = 1)
         {
             lenght += len;
         }
@@ -26,15 +26,15 @@ namespace NodesImplementation.Structures.Generic
         {
             firstNode = new LinkedListNode<T>(Object, rightNode: firstNode, leftNode: null);
 
-            IncreaseLength();
-            firstNode.actualizeIndex();
+            UpdateLength();
+            firstNode.updateIndex();
         }
         public void AddLast(T Object)
         {
             lastNode = new LinkedListNode<T>(Object, rightNode: null, leftNode: lastNode);
 
-            IncreaseLength();
-            lastNode.actualizeIndex();
+            UpdateLength();
+            lastNode.updateIndex();
         }
         public void AddAt(T Object, int index)
         {
@@ -43,17 +43,37 @@ namespace NodesImplementation.Structures.Generic
             LinkedListNode<T> zNode = new LinkedListNode<T>(Object, rightNode: yNode, leftNode: xNode);
 
             if(xNode == null && yNode == null)
-            throw new Exception("There is no element at or around the index");
+            {
+                if(firstNode == null && index == 0)
+                {
+                    AddFirst(Object);
+                }else
+                {
+                    throw new Exception($"There is no element at or around the index: {index}");
+                }
+                
+                
+            }
+            else
+            {
+                UpdateLength();
+            }
 
             if(xNode != null)
             xNode.SetPreviousNode(zNode);
             if(yNode != null)
             yNode.SetNextNode(zNode);
 
-            IncreaseLength();
-            zNode.actualizeIndex();
+            zNode.updateIndex();
+
+            if(lastNode == null || zNode.getIndex() > lastNode.getIndex())
+                lastNode = zNode;
 
         }
+
+
+
+
         public void RemoveLast()
         {
             if(lastNode == null)
@@ -69,6 +89,7 @@ namespace NodesImplementation.Structures.Generic
 
             lastNode = xNode;
 
+            UpdateLength(-1);
         }
         public void RemoveFirst()
         {
@@ -84,15 +105,16 @@ namespace NodesImplementation.Structures.Generic
                 lastNode = null;
             }
 
-            firstNode.actualizeIndex();
+            firstNode.updateIndex();
 
             firstNode = zNode;
-            
+            UpdateLength(-1);
         }
 
         public void Remove(T item)
         {
             RemoveAt(GetNode(item).getIndex());
+            
         }
 
         public void RemoveAt(int index)
@@ -118,32 +140,33 @@ namespace NodesImplementation.Structures.Generic
             }
 
 
-            if(xNode==null&&zNode!=null){
-                zNode.actualizeIndex();
+            if(zNode!=null){
+                zNode.updateIndex();
             }
-            if((xNode != null && zNode != null) || (xNode!=null&&zNode==null)){
-                xNode?.actualizeIndex(); 
+            if(xNode != null && zNode == null){
+                xNode.updateIndex(); 
             }
             
-            
+            UpdateLength(-1);
         }
 
+        public int GetItemIndex(T item)
+        {
+            return GetNode(item).getIndex();
+
+        }
 
         private LinkedListNode<T>? GetNodeAt(int index)
         {   
-            if(firstNode == null)
-            throw new Exception("Collection doesn't contain any elements");
+            // if(firstNode == null)
+            //     throw new Exception("Collection doesn't contain any elements");
 
             LinkedListNode<T>? currentNode = firstNode;
 
-            while (currentNode.getIndex() != index)
+            while (currentNode != null && currentNode.getIndex() != index)
             {
                 if(currentNode != null){
                     currentNode = currentNode.GetPreviousNode();
-                }
-
-                if(currentNode == null){
-                    throw new Exception("Element not found at specified index");
                 }
             }
 

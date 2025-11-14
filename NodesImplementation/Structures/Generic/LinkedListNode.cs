@@ -21,13 +21,13 @@ namespace NodesImplementation.Structures.Generic
 
         }
 
-        public void actualizeIndex()
+        public void updateIndex()
         {
             this.index = nextNode==null?0:nextNode.getIndex() + 1 ;
 
             if(previousNode != null)
             {
-                previousNode.actualizeIndex();    
+                previousNode.updateIndex();    
             }
         }
         

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NodesImplementation.Diary.ShortCuts;
 using NodesImplementation.DiaryStructs;
 using NodesImplementation.Structures;
+using NodesImplementation.Structures.Generic;
 
 
 namespace NodesImplementation
@@ -18,6 +19,10 @@ namespace NodesImplementation
         {
             this.diary = new DiaryStructs.Diary();
         }
+
+        private (DiarySheet sheet, int index)? selectedSheet;
+
+        private string editedText;
         public void run()
         {
 
@@ -30,14 +35,73 @@ namespace NodesImplementation
             // zavri: Zavření deníku
             // Počet záznamů: 0 Zadej příkaz:
 
-            List<DiarySheet> diarySheets = new List<DiarySheet>();
+            LinkedListParent<DiarySheet> diarySheets = new LinkedListParent<DiarySheet>();
 
-            ShortCut shortCutPrevious = new ShortCut("predchozi", ()=>{});
-            ShortCut shortCutNext = new ShortCut("dalsi", ()=>{});
-            ShortCut shortCutNew = new ShortCut("novy", ()=>{});
-            ShortCut shortCutSave = new ShortCut("uloz", ()=>{});
-            ShortCut shortCutDelete = new ShortCut("smaz", ()=>{});
-            ShortCut shortCutClose = new ShortCut("zavri", ()=>{});
+
+
+            ShortCut shortCutPrevious = new ShortCut("predchozi", ()=>{
+                if(0 <= selectedSheet?.index - 1)
+                    selectedSheet = (diarySheets.ElementAt((int)(selectedSheet?.index - 1)), (int)(selectedSheet?.index - 1));
+
+            });
+
+            ShortCut shortCutNext = new ShortCut("dalsi", () =>
+            {
+                if(diarySheets.Lenght > selectedSheet?.index + 1 && selectedSheet.HasValue)
+                    selectedSheet = (diarySheets.ElementAt((int)(selectedSheet?.index + 1)), (int)(selectedSheet?.index + 1));
+
+            });
+            ShortCut shortCutNew = new ShortCut("novy", () =>
+            {
+
+                Console.Write("Vlož titulek poznámky:\n");
+                diarySheets.AddAt(new DiarySheet(Console.ReadLine()??"Untitled note"), (selectedSheet?.index??-1) + 1);
+                selectedSheet = (diarySheets.ElementAt((selectedSheet?.index??-1) + 1), (selectedSheet?.index ?? -1) + 1);
+                Console.Write("Vlož text poznámky:\n");
+                
+                string line = "";
+                while (line.Trim().ToLower() != "uloz")
+                {
+                    editedText += line;
+                    line = Console.ReadLine()+"\n";
+
+                    // Console.WriteLine(line.Trim().ToLower() + " == " + "uloz = " + (line.Trim().ToLower() == "uloz"));
+                }
+                
+                diarySheets.ElementAt((int)selectedSheet?.index).SetText(editedText);
+                editedText = "";
+
+            });
+            ShortCut shortCutSave = new ShortCut("uloz", ()=>{
+                
+
+            });
+            ShortCut shortCutDelete = new ShortCut("smaz", () =>
+            {
+                if(selectedSheet.HasValue){
+                    diarySheets.RemoveAt(selectedSheet.Value.index);
+                    if(diarySheets.Lenght != 0)
+                    {
+                        // if(selectedSheet.Value.index != diarySheets.Lenght)
+                        if(selectedSheet.Value.index != 0)
+                            selectedSheet = (diarySheets.ElementAt(selectedSheet.Value.index-1), selectedSheet.Value.index-1);
+                        else
+                        {
+                            selectedSheet = (diarySheets.ElementAt(selectedSheet.Value.index), selectedSheet.Value.index);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unable to remove any item, since collection doesn't contain any");
+                        selectedSheet = null;
+                    }
+                }
+                
+            });
+            ShortCut shortCutClose = new ShortCut("zavri", ()=>{
+                Console.WriteLine("exit"); 
+                throw new Exception("Program forced to end");
+            });
 
 
             LabelShortCut[] shortCuts = [
@@ -49,22 +113,35 @@ namespace NodesImplementation
                 new LabelShortCut(shortCutClose, "Zavření deníku "),
             ];
 
-
+            
             while (true)
             {
+                
+
                 Console.Clear();
-
-
 
                 diary.renderMenu(
                     shortCuts
                 );
-                Console.WriteLine($"Počet záznamů: {diarySheets.Count}");
+
+                if(selectedSheet.HasValue)
+                {
+                    diary.renderSheet(
+                        selectedSheet.Value.sheet
+                    );
+                }
+                else
+                {
+                    Console.WriteLine("There are no records yet");
+                }
+                
+
+                Console.WriteLine($"Počet záznamů: {diarySheets.Lenght}");
                 Console.Write("Napiš příkaz: ");
 
                 string? command = Console.ReadLine();
 
-                for(int i = 0; i < shortCuts.Length-1; i++) 
+                for(int i = 0; i < shortCuts.Length; i++) 
                 {
                     if(command == shortCuts[i].shortCut.keyCombination)
                     {
