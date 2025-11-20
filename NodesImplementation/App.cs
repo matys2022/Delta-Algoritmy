@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NodesImplementation.Diary.ShortCuts;
 using NodesImplementation.DiaryStructs;
@@ -51,11 +52,65 @@ namespace NodesImplementation
                     selectedSheet = (diarySheets.ElementAt((int)(selectedSheet?.index + 1)), (int)(selectedSheet?.index + 1));
 
             });
+
+            DateOnly dateOnly = new DateOnly();
             ShortCut shortCutNew = new ShortCut("novy", () =>
             {
+                Console.Write("Chceš vložit datum (y/n):");
+                if(Console.ReadKey().KeyChar == 'y')
+                {
+                    Console.WriteLine();
+                    while (true)
+                    {
+                        Console.WriteLine("Napis jej ve formatu DD/MM/YYYY");
+                        string? dateStr = Console.ReadLine();
+                        if(string.IsNullOrWhiteSpace(dateStr))
+                        continue;
+                        string pattern = "[/]";
+                        string[] parts = Regex.Split(dateStr, pattern);
+                        
+                        if(int.TryParse(parts[2], out int year) && year >= 1)
+                        {
+                            Console.WriteLine(year);
+                            dateOnly = dateOnly.AddYears(year - 1);
+                            
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unable to parse the year, try again");
+                            continue;
+                        }
+
+                        if(int.TryParse(parts[1], out int month) && month >= 1 && month <= 12)
+                        {
+                            Console.WriteLine(month);
+                            dateOnly = dateOnly.AddMonths(month - 1);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unable to parse the month, try again");
+                            continue;
+                        }
+
+                        if(int.TryParse(parts[0], out int day) && day >= 1 && day <= 31)
+                        {
+                            Console.WriteLine(day);
+                            dateOnly = dateOnly.AddDays(day - 1);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unable to parse the day, try again");
+                            continue;
+                        }
+
+                        Console.WriteLine(dateOnly.ToString() + " Datum");
+                        break;
+                    }
+                }
+
 
                 Console.Write("Vlož titulek poznámky:\n");
-                diarySheets.AddAt(new DiarySheet(Console.ReadLine()??"Untitled note"), (selectedSheet?.index??-1) + 1);
+                diarySheets.AddAt(new DiarySheet(Console.ReadLine()??"Untitled note", dateOnly), (selectedSheet?.index??-1) + 1);
                 selectedSheet = (diarySheets.ElementAt((selectedSheet?.index??-1) + 1), (selectedSheet?.index ?? -1) + 1);
                 Console.Write("Vlož text poznámky:\n");
                 
@@ -65,7 +120,6 @@ namespace NodesImplementation
                     editedText += line;
                     line = Console.ReadLine()+"\n";
 
-                    // Console.WriteLine(line.Trim().ToLower() + " == " + "uloz = " + (line.Trim().ToLower() == "uloz"));
                 }
                 
                 diarySheets.ElementAt((int)selectedSheet?.index).SetText(editedText);

@@ -17,17 +17,23 @@ namespace NodesImplementation.DiaryStructs
             get => sheetTitle;
         }
 
-        private string sheetText;
-        public string SheetText
+        private string? sheetText;
+        public string? SheetText
         {
             get => sheetText;
             private set => sheetText = value;
         }
 
-        public DiarySheet(string sheetTitle)
+        public DiarySheet(string sheetTitle, DateOnly? date = null)
         {
             this.sheetTitle = sheetTitle;
-            this.dateCreated = DateOnly.FromDateTime(DateTime.Today);
+            if(date == null){
+                this.dateCreated = DateOnly.FromDateTime(DateTime.Today);
+            }
+            else
+            {
+                this.dateCreated = (DateOnly)date;
+            }
         }
 
         public void SetText(string str)
