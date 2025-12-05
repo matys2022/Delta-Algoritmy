@@ -11,7 +11,7 @@ namespace SortingAlgorithms.Services.Sorting
         
         public SortingService()
         {
-            int ff;
+
         }
 
         public IEnumerable<T> Sort(IEnumerable<T> items, ISortingAlgorithm<T> algorithm) 
