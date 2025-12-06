@@ -6,14 +6,14 @@ using SortingAlgorithms.Interfaces.Sorting;
 
 namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
-    public class HeapSort<T> : ISortingAlgorithm<T> where T : IConvertible, ISpanFormattable, IComparable
+    public class HeapSort<T> : ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
         public HeapSort()
         {
             
         }
 
-        public IEnumerable<(double subv, T value)> Sort(IEnumerable<(double subv, T value)> items)
+        public IList<(double subv, T value)> Sort(IList<(double subv, T value)> items)
         {
             throw new NotImplementedException();
         }

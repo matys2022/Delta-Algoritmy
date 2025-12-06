@@ -6,7 +6,7 @@ using SortingAlgorithms.Interfaces.Sorting;
 
 namespace SortingAlgorithms.Services.Sorting
 {
-    public class SortingService<T> where T : IConvertible, ISpanFormattable, IComparable
+    public class SortingService<T> where T : IConvertible, IComparable
     {
         
         public SortingService()
@@ -19,18 +19,46 @@ namespace SortingAlgorithms.Services.Sorting
             
             List<(double subv, T value)> values = new List<(double subv, T value)>();
 
-            if(typeof(T) != typeof(double)){
+            // Double - Maybe decimal?
+            if(typeof(T) == typeof(double)){
+                
+                foreach (T item in items)
+                {
+                    if(typeof(T) == typeof(double)){
+                        values.Add((subv: double.Parse(item.ToString()??""), value :item));
+                    }
+                }
+
+            }
+            // Int
+            else if(typeof(T) == typeof(int))
+            {
+                foreach (T item in items)
+                {
+                    values.Add( (subv: double.Parse(item.ToString()??""), value : item)); 
+                }
+            }
+            // Strings
+            else
+            {
+                int maxLenght = 0;
+                foreach (T item in items)
+                {
+                    string strItem = item.ToString()??"";
+                    if(strItem.Length > maxLenght)
+                    maxLenght = strItem.Length; 
+                }
+
                 foreach (T item in items)
                 {
                     double sum = 0;
                     string? parsed = item.ToString();
                     if(parsed != null)
                     {
-                        
-                        foreach (char c in parsed)
+                        for (int i = 0; i < parsed.Length; i++)
                         {
-                            sum += (double)c;
-                            
+                            sum += ((double)parsed[i]) / Math.Pow(256, (i+1));
+
                         }
                     }
                     else
@@ -40,16 +68,6 @@ namespace SortingAlgorithms.Services.Sorting
                     
                     values.Add((subv: sum, value: item));
 
-                }
-
-            }
-            else
-            {
-                foreach (T item in items)
-                {
-                    if(typeof(T) == typeof(double)){
-                        values.Add((subv: double.Parse(item.ToString()??""), value: item));
-                    }
                 }
             }
 

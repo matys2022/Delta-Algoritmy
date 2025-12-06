@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace SortingAlgorithms.Interfaces.Sorting
 {
-    public interface ISortingAlgorithm<T> where T : IConvertible, ISpanFormattable, IComparable
+    public interface ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
-        public IEnumerable<(double subv, T value)> Sort(IEnumerable<(double subv, T value)> items);
+        public IList<(double subv, T value)> Sort(IList<(double subv, T value)> items);
     }
 }
