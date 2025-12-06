@@ -71,8 +71,56 @@ namespace SortingAlgorithms
             //     honeydew
             //     grape
             // ";
-
-            string StringSample = @"
+            
+            string StringSample = @"qj
+zu
+bz
+cg
+md
+es
+md
+yo
+qy
+av
+dx
+ku
+et
+ox
+fb
+dl
+na
+qu
+kn
+jg
+nk
+qx
+tq
+kx
+xb
+jk
+ep
+qd
+kb
+ul
+rg
+ou
+gc
+hc
+bc
+dw
+gn
+ds
+dg
+np
+qa
+gn
+yq
+qc
+wa
+uv
+it
+df
+sx
             ";
 
 
@@ -89,9 +137,9 @@ namespace SortingAlgorithms
 
             SortingService<double> SortingDoubleService = new SortingService<double>();
 
-            IEnumerable<double> DoubleSampleSorted = SortingDoubleService.Sort(ParsedDoubleSample, new SelectionSort<double>());
+            Console.WriteLine("Double Sorted");
 
-            // Console.WriteLine("Double Sorted");
+            IEnumerable<double> DoubleSampleSorted = SortingDoubleService.Sort(ParsedDoubleSample, new BubbleSort<double>());
             
             double DoublePrev = double.MinValue;
 
@@ -105,9 +153,10 @@ namespace SortingAlgorithms
                 {
                     throw new Exception("Not sorted");
                 }
-                // Console.WriteLine(item);
+                Console.WriteLine($"{item}");
             }
             
+
 
 
 
@@ -123,9 +172,9 @@ namespace SortingAlgorithms
 
             SortingService<int> SortingIntService = new SortingService<int>();
             
-            IEnumerable<int> IntSampleSorted = SortingIntService.Sort(ParsedIntSample, new SelectionSort<int>());
+            Console.WriteLine("Int Sorted");
 
-            // Console.WriteLine("Int Sorted");
+            IEnumerable<int> IntSampleSorted = SortingIntService.Sort(ParsedIntSample, new BubbleSort<int>());
             
             int IntPrev = int.MinValue;
 
@@ -138,8 +187,9 @@ namespace SortingAlgorithms
                 else
                 {
                     throw new Exception("Not sorted");
+                    
                 }
-                // Console.WriteLine(item);
+                Console.WriteLine($"{item}");
             }
 
 
@@ -150,7 +200,7 @@ namespace SortingAlgorithms
 
             SortingService<string> SortingStringService = new SortingService<string>();
             
-            IEnumerable<string> StringSampleSorted = SortingStringService.Sort(ParsedStringSample, new SelectionSort<string>());
+            IEnumerable<string> StringSampleSorted = SortingStringService.Sort(ParsedStringSample, new BubbleSort<string>());
 
             Console.WriteLine("Strings Sorted");
             
@@ -183,7 +233,7 @@ namespace SortingAlgorithms
                 {
                     throw new Exception("Not sorted");
                 }
-                Console.WriteLine($"{parsed}");
+                // Console.WriteLine($"{parsed}");
             }
 
         }
