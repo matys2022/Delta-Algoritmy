@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualBasic;
 using SortingAlgorithms.Interfaces.Sorting;
+using SortingAlgorithms.Models.Tuples;
 
 namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
@@ -16,9 +17,9 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
         private int collectionSize = 0;
 
-        public IList<(double subv, T value)> Sort(IList<(double subv, T value)> items)
+        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
         {
-            IList<(double subv, T value)> collectionCopy = [.. items];
+            IList<SortablePair<T>> collectionCopy = [.. items];
             
 
             collectionSize = collectionCopy.Count;
@@ -49,7 +50,7 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
     
                 PopHeap(collectionCopy, tmpIx);
 
-                (double subv, T value) tmp = collectionCopy[0];
+                SortablePair<T> tmp = collectionCopy[0];
                 
                 collectionCopy[0] = collectionCopy[collectionSize - 1];
                 collectionCopy[collectionSize - 1] = tmp;
@@ -63,7 +64,7 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
         }
 
 
-        private void PopHeap(IList<(double subv, T value)> collectionCopy, int tmpIx)
+        private void PopHeap(IList<SortablePair<T>> collectionCopy, int tmpIx)
         {
             int LeftChildIx = tmpIx * 2 + 1;
             int RightChildIx = tmpIx * 2 + 2;
@@ -92,7 +93,7 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                 return;
             }
 
-            (double subv, T value) tmp = collectionCopy[tmpIx];
+            SortablePair<T> tmp = collectionCopy[tmpIx];
                 
             collectionCopy[tmpIx] = collectionCopy[LargestValueIx];
             collectionCopy[LargestValueIx] = tmp;

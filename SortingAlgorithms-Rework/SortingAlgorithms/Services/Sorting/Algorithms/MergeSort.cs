@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SortingAlgorithms.Interfaces.Sorting;
+using SortingAlgorithms.Models.Tuples;
 
 namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
@@ -13,14 +14,14 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
             
         }
 
-        public IList<(double subv, T value)> Sort(IList<(double subv, T value)> items)
+        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
         {
-            IList<(double subv, T value)> collectionCopy = [.. items];
+            IList<SortablePair<T>> collectionCopy = [.. items];
             
             return Split(collectionCopy);
         }
 
-        public IList<(double subv, T value)> Split(IList<(double subv, T value)> collectionCopy)
+        private IList<SortablePair<T>> Split(IList<SortablePair<T>> collectionCopy)
         {
             if(collectionCopy.Count == 1)
                 return collectionCopy;
@@ -29,8 +30,8 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
             // Posted by Saeed Amiri, modified by community. See post 'Timeline' for change history
             // Retrieved 2025-12-07, License - CC BY-SA 3.0
 
-            IList<(double subv, T value)> firstArray = collectionCopy.Take(collectionCopy.Count / 2).ToArray();
-            IList<(double subv, T value)> secondArray = collectionCopy.Skip(collectionCopy.Count / 2).ToArray();
+            IList<SortablePair<T>> firstArray = collectionCopy.Take(collectionCopy.Count / 2).ToArray();
+            IList<SortablePair<T>> secondArray = collectionCopy.Skip(collectionCopy.Count / 2).ToArray();
 
             if(firstArray.Count > 1)
             {
@@ -48,12 +49,12 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
         }
 
-        public IList<(double subv, T value)> Merge(IList<(double subv, T value)> list1, IList<(double subv, T value)> list2)
+        private IList<SortablePair<T>> Merge(IList<SortablePair<T>> list1, IList<SortablePair<T>> list2)
         {
-            IList<(double subv, T value)> largest = list1;
-            IList<(double subv, T value)> smallest = list2;
+            IList<SortablePair<T>> largest = list1;
+            IList<SortablePair<T>> smallest = list2;
 
-            IList<(double subv, T value)> merged = new List<(double subv, T value)>(){};
+            IList<SortablePair<T>> merged = new List<SortablePair<T>>(){};
 
             if(list1.Count < list2.Count)
             {

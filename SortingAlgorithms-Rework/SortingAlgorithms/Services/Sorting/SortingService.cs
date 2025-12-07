@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SortingAlgorithms.Interfaces.Sorting;
+using SortingAlgorithms.Models.Tuples;
 
 namespace SortingAlgorithms.Services.Sorting
 {
@@ -17,7 +18,7 @@ namespace SortingAlgorithms.Services.Sorting
         public IEnumerable<T> Sort(IEnumerable<T> items, ISortingAlgorithm<T> algorithm) 
         {
             
-            List<(double subv, T value)> values = new List<(double subv, T value)>();
+            List<SortablePair<T>> values = new List<SortablePair<T>>();
 
             // Double - Maybe decimal?
             if(typeof(T) == typeof(double)){
@@ -25,7 +26,7 @@ namespace SortingAlgorithms.Services.Sorting
                 foreach (T item in items)
                 {
                     if(typeof(T) == typeof(double)){
-                        values.Add((subv: double.Parse(item.ToString()??""), value :item));
+                        values.Add(new SortablePair<T>(subv: double.Parse(item.ToString()??""), value :item));
                     }
                 }
 
@@ -36,7 +37,7 @@ namespace SortingAlgorithms.Services.Sorting
             {
                 foreach (T item in items)
                 {
-                    values.Add( (subv: double.Parse(item.ToString()??""), value : item)); 
+                    values.Add( new SortablePair<T>(subv: double.Parse(item.ToString()??""), value : item)); 
                 }
             }
             
@@ -68,13 +69,13 @@ namespace SortingAlgorithms.Services.Sorting
                         throw new ArgumentNullException();
                     }
                     
-                    values.Add((subv: sum, value: item));
+                    values.Add(new SortablePair<T>(subv: sum, value: item));
 
                 }
             }
 
 
-            List<(double subv, T value)> sorted_values = algorithm.Sort(values).ToList();    
+            List<SortablePair<T>> sorted_values = algorithm.Sort(values).ToList();    
             
             return sorted_values.Select(x=>x.value);
             

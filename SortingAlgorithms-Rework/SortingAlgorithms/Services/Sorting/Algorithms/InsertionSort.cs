@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SortingAlgorithms.Interfaces.Sorting;
+using SortingAlgorithms.Models.Tuples;
 
 namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
@@ -13,14 +14,14 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
             
         }
 
-        public IList<(double subv, T value)> Sort(IList<(double subv, T value)> items)
+        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
         {
-            IList<(double subv, T value)> collectionCopy = [.. items];
+            IList<SortablePair<T>> collectionCopy = [.. items];
 
             for(int i = 0; i < collectionCopy.Count() - 1; i++)
             {
                 int tmpIx = i;
-                (double subv, T value) previousItem = collectionCopy[i];
+                SortablePair<T> previousItem = collectionCopy[i];
 
                 while (true)
                 {
