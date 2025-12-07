@@ -23,60 +23,14 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
             collectionSize = collectionCopy.Count;
 
-            int Ix = collectionSize - 1;
-            int? tmpIxHeapify = null;
 
             // Sort the tree
-            while (true)
+            int Ix = collectionSize / 2 - 1; 
+
+            while (Ix >= 0)
             {
-                if(Ix == 0 && tmpIxHeapify != null)
-                {
-                    Ix = (int)tmpIxHeapify;
-                    tmpIxHeapify = null;
-                }
-
-                // Master Heap was already processed, thus the tree is sorted
-                if(Ix <= 0)
-                {    
-                    break;
-                }
-
-                int parentNodeIndex = (Ix - 1) / 2;
-
-
-                int LeftChildIx = Ix - 1;
-                int RightChildIx = Ix;
-
-                int LargestValueIx = parentNodeIndex;
-
-                if(collectionCopy[LeftChildIx].subv > collectionCopy[parentNodeIndex].subv || collectionCopy[RightChildIx].subv > collectionCopy[parentNodeIndex].subv)
-                {
-                    
-                    (double subv, T value) tmp = collectionCopy[parentNodeIndex];
-                    if(collectionCopy[LeftChildIx].subv > collectionCopy[RightChildIx].subv)
-                    {
-                        LargestValueIx = LeftChildIx;
-                    }else
-                    {
-                        LargestValueIx = RightChildIx;
-                    }
-
-                    collectionCopy[parentNodeIndex] = collectionCopy[LargestValueIx];
-                    collectionCopy[LargestValueIx] = tmp;
-
-                    tmpIxHeapify ??= Ix;
-                    Ix = parentNodeIndex;
-
-                }
-                
-                // Heap is already sorted, free to move to next one
-                if(LargestValueIx == parentNodeIndex)
-                {
-                    Ix += Ix%2 == 1 ? -1 : -2;
-                }
-                
-                
-
+                PopHeap(collectionCopy, Ix);
+                Ix--;
             }
 
             int tmpIx = 0;
