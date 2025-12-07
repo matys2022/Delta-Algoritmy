@@ -57,23 +57,41 @@ namespace SortingAlgorithms
             // 9,3307
  
             string IntSample = @"
-                2015922585
-                -296785545
-                432769592
-                -141982132
-                368342189
-                -1375308651
-                -1378577977
-                645670780
-                1171295925
-                -1454574731
-                -466282490
-                1749769646
-                -1770420192
-                532756948
-                -1957045239
-                -1574246914
+                20
+                -29
+                43
+                -14
+                36
+                -13
+                -13
+                64
+                11
+                -14
+                -46
+                17
+                -17
+                53
+                19
+                -15
             ";
+            // string IntSample = @"
+            //     2015922585
+            //     -296785545
+            //     432769592
+            //     -141982132
+            //     368342189
+            //     -1375308651
+            //     -1378577977
+            //     645670780
+            //     1171295925
+            //     -1454574731
+            //     -466282490
+            //     1749769646
+            //     -1770420192
+            //     532756948
+            //     -1957045239
+            //     -1574246914
+            // ";
 
             
             // Sorted
@@ -179,7 +197,7 @@ sx
 
             Console.WriteLine("Double Sorted");
 
-            IEnumerable<double> DoubleSampleSorted = SortingDoubleService.Sort(ParsedDoubleSample, new InsertionSort<double>());
+            IEnumerable<double> DoubleSampleSorted = SortingDoubleService.Sort(ParsedDoubleSample, new HeapSort<double>());
             
             double DoublePrev = double.MinValue;
 
@@ -214,7 +232,7 @@ sx
             
             Console.WriteLine("Int Sorted");
 
-            IEnumerable<int> IntSampleSorted = SortingIntService.Sort(ParsedIntSample, new InsertionSort<int>());
+            IEnumerable<int> IntSampleSorted = SortingIntService.Sort(ParsedIntSample, new HeapSort<int>());
             
             int IntPrev = int.MinValue;
 
@@ -240,7 +258,7 @@ sx
 
             SortingService<string> SortingStringService = new SortingService<string>();
             
-            IEnumerable<string> StringSampleSorted = SortingStringService.Sort(ParsedStringSample, new InsertionSort<string>());
+            IEnumerable<string> StringSampleSorted = SortingStringService.Sort(ParsedStringSample, new HeapSort<string>());
 
             Console.WriteLine("Strings Sorted");
             
@@ -273,7 +291,7 @@ sx
                 {
                     throw new Exception("Not sorted");
                 }
-                // Console.WriteLine($"{parsed}");
+                Console.WriteLine($"{parsed}");
             }
 
         }
