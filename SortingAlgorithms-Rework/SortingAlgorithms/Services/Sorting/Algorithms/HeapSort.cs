@@ -99,12 +99,6 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
             PopHeap(collectionCopy, LargestValueIx);
 
-
-            
-            
         }
-
-
-
     }
 }

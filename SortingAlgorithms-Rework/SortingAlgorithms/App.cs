@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -93,6 +94,8 @@ namespace SortingAlgorithms
             //     -1574246914
             // ";
 
+
+
             
             // Sorted
             // -1957045239
@@ -184,6 +187,41 @@ sx
 
 
 
+            IEnumerable<int> ParsedIntSample = IntSample.
+            Split(new char[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).
+            Select(x => { 
+                if (int.TryParse(x.Trim(), out int y)) 
+                    { return y; } 
+                else 
+                    { Console.WriteLine(x); throw new Exception("One or more input values are invalid"); } 
+                });
+
+            SortingService<int> SortingIntService = new SortingService<int>();
+            
+            Console.WriteLine("Int Sorted");
+
+            IEnumerable<int> IntSampleSorted = SortingIntService.Sort(ParsedIntSample, new MergeSort<int>());
+            
+            int IntPrev = int.MinValue;
+
+            foreach (int item in IntSampleSorted)
+            {
+                if(IntPrev <= item)
+                {
+                    IntPrev = item;
+                }
+                else
+                {
+                    throw new Exception("Not sorted");
+                    
+                }
+                Console.WriteLine($"{item}");
+            }
+
+
+
+
+
             IEnumerable<double> ParsedDoubleSample = DoubleSample.
             Split(new char[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).
             Select(x => { 
@@ -197,7 +235,7 @@ sx
 
             Console.WriteLine("Double Sorted");
 
-            IEnumerable<double> DoubleSampleSorted = SortingDoubleService.Sort(ParsedDoubleSample, new HeapSort<double>());
+            IEnumerable<double> DoubleSampleSorted = SortingDoubleService.Sort(ParsedDoubleSample, new MergeSort<double>());
             
             double DoublePrev = double.MinValue;
 
@@ -219,36 +257,6 @@ sx
 
 
 
-            IEnumerable<int> ParsedIntSample = IntSample.
-            Split(new char[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).
-            Select(x => { 
-                if (int.TryParse(x.Trim(), out int y)) 
-                    { return y; } 
-                else 
-                    { Console.WriteLine(x); throw new Exception("One or more input values are invalid"); } 
-                });
-
-            SortingService<int> SortingIntService = new SortingService<int>();
-            
-            Console.WriteLine("Int Sorted");
-
-            IEnumerable<int> IntSampleSorted = SortingIntService.Sort(ParsedIntSample, new HeapSort<int>());
-            
-            int IntPrev = int.MinValue;
-
-            foreach (int item in IntSampleSorted)
-            {
-                if(IntPrev <= item)
-                {
-                    IntPrev = item;
-                }
-                else
-                {
-                    throw new Exception("Not sorted");
-                    
-                }
-                Console.WriteLine($"{item}");
-            }
 
 
 
@@ -258,7 +266,7 @@ sx
 
             SortingService<string> SortingStringService = new SortingService<string>();
             
-            IEnumerable<string> StringSampleSorted = SortingStringService.Sort(ParsedStringSample, new HeapSort<string>());
+            IEnumerable<string> StringSampleSorted = SortingStringService.Sort(ParsedStringSample, new MergeSort<string>());
 
             Console.WriteLine("Strings Sorted");
             
