@@ -30,6 +30,7 @@ namespace SortingAlgorithms.Services.Sorting
                 }
 
             }
+            
             // Int
             else if(typeof(T) == typeof(int))
             {
@@ -38,6 +39,7 @@ namespace SortingAlgorithms.Services.Sorting
                     values.Add( (subv: double.Parse(item.ToString()??""), value : item)); 
                 }
             }
+            
             // Strings
             else
             {

@@ -200,7 +200,7 @@ sx
             
             Console.WriteLine("Int Sorted");
 
-            IEnumerable<int> IntSampleSorted = SortingIntService.Sort(ParsedIntSample, new MergeSort<int>());
+            IEnumerable<int> IntSampleSorted = SortingIntService.Sort(ParsedIntSample, new QuickSort<int>());
             
             int IntPrev = int.MinValue;
 
@@ -235,7 +235,7 @@ sx
 
             Console.WriteLine("Double Sorted");
 
-            IEnumerable<double> DoubleSampleSorted = SortingDoubleService.Sort(ParsedDoubleSample, new MergeSort<double>());
+            IEnumerable<double> DoubleSampleSorted = SortingDoubleService.Sort(ParsedDoubleSample, new QuickSort<double>());
             
             double DoublePrev = double.MinValue;
 
@@ -266,7 +266,7 @@ sx
 
             SortingService<string> SortingStringService = new SortingService<string>();
             
-            IEnumerable<string> StringSampleSorted = SortingStringService.Sort(ParsedStringSample, new MergeSort<string>());
+            IEnumerable<string> StringSampleSorted = SortingStringService.Sort(ParsedStringSample, new QuickSort<string>());
 
             Console.WriteLine("Strings Sorted");
             
