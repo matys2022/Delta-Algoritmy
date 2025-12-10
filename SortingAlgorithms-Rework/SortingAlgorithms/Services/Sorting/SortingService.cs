@@ -61,7 +61,6 @@ namespace SortingAlgorithms.Services.Sorting
                         for (int i = 0; i < parsed.Length; i++)
                         {
                             sum += ((double)parsed[i]) / Math.Pow(256, (i+1));
-
                         }
                     }
                     else
