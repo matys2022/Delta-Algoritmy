@@ -17,18 +17,11 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
         public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
         {
-            List<SortablePair<T>> collectionCopy = new List<SortablePair<T>>([.. items]);
+            List<SortablePair<T>> collectionCopy = new List<SortablePair<T>>(items);
 
 
-            return CountingSort(collectionCopy);
-        }
-
-        private List<SortablePair<T>> CountingSort(List<SortablePair<T>> items)
-        {
-            List<SortablePair<T>> collectionOutput = new List<SortablePair<T>>(items);
-            
-            int maxLenght = GetMax(collectionOutput);
-            
+            (int maxLenght, int exp) = GetMax(collectionCopy);
+                        
             for (int j = maxLenght - 1; j >= 0; j--)
             {
 
@@ -40,9 +33,9 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                 }
 
 
-                for (int i = 0; i < collectionOutput.Count; i++)
+                for (int i = 0; i < collectionCopy.Count; i++)
                 {
-                    double currentItem = collectionOutput[i].Subv;
+                    decimal currentItem = decimal.Parse(Math.Abs(collectionCopy[i].subv * Math.Pow(10, exp)).ToString().PadLeft(10, '0').Substring(0, 10)) * (collectionCopy[i].subv < 0 ? -1 : 1);
 
                     string subsidary_value = Math.Abs(currentItem)
                     .ToString().Replace(",", String.Empty)
@@ -50,37 +43,52 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                     
                     // Add on index defined by the decimal interpretation of the ascii char
                     // To do that subtract 48 to get 0 for zero and so on
-                    sumArr[((int)subsidary_value[j]) - 48 + (currentItem < 0 ? 10 : 0) ].Add(collectionOutput[i]);
+                    sumArr[((int)subsidary_value[j]) - 48 + (currentItem < 0 ? 10 : 0)].Add(collectionCopy[i]);
                 }
 
-                collectionOutput = new List<SortablePair<T>>();
+                collectionCopy = new List<SortablePair<T>>();
                 
                 for (int i = 19; i >= 10; i--)
                 {
-                    collectionOutput.AddRange(sumArr[i]);
+                    collectionCopy.AddRange(sumArr[i]);
                 }
                 for (int i = 0; i < 10; i++)
                 {
-                    collectionOutput.AddRange(sumArr[i]);
+                    collectionCopy.AddRange(sumArr[i]);
                 }
                 
 
             }
 
-
-            return collectionOutput;
+            return collectionCopy;
         }
 
-        private static int GetMax(List<SortablePair<T>> items)
+        private static (int maxLenght, int exp) GetMax(List<SortablePair<T>> items)
         {
-            int max = 0;
+            (int maxLenght, int exp) = (0, 0);
             foreach(SortablePair<T> item in items)
             {
-                int len = Math.Abs(item.Subv).ToString().Length;
-                if(len > max)
-                max = len;
+                string[] str = Math.Abs(item.subv).ToString().Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+
+
+                int whole = int.Parse(str[0]);
+                int? floating = str.Length == 1 ? null : int.Parse(str[1].PadLeft(9, '0').Substring(0, 9));
+                
+                int len = (whole + (floating??0).ToString()).Length;
+                
+                if(len > maxLenght){
+                    maxLenght = len;
+                }
+                
+                // Modify to set the highiest number before the decimal places number.
+                int lenght = (floating.ToString()??"").Length;
+
+                if(lenght > exp){
+                    exp = str[1].Length;
+                }
             }
-            return max;
+            return (maxLenght, exp);
         }
         
     }
