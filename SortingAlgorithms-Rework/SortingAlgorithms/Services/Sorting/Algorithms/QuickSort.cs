@@ -23,64 +23,53 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
             int pivotPoints = 0;
             
-            Stack<(int ia, int iz)> ranges = new Stack<(int ia, int iz)>([(ia: 0, iz: collectionCopy.Count - 1)]);
+            Stack<(int ia, int iz)> partitions = new Stack<(int ia, int iz)>([(ia: 0, iz: collectionCopy.Count - 1)]);
 
-            Random random = new Random();
+            // int ix = (int)Math.Ceiling(((decimal) collectionCopy.Count - 1 )/ 2);
 
-            while(ranges.Count > 0)
+            while(partitions.Count > 0)
             {
-                // if (pivotPoints >= collectionCopy.Count)
-                // {
-                //     break;
-                // }
 
-                (int ia, int iz) nextBunch = ranges.Peek();
-                int ia =  nextBunch.ia;
+                (int ia, int iz) nextBunch = partitions.Peek();
+                int ia =  nextBunch.ia ;
                 int iz = nextBunch.iz;
 
-                // Console.WriteLine($"{((double)pivotPoints) / ((double)collectionCopy.Count / 100)}");
-                // if(pivotPoints%10 == 0)
-                // Console.Clear();
+                SortablePair<T> pivot = collectionCopy[ia + ((iz - ia) >> 1)];
+
+
+                int i = ia - 1;
+                int j = iz + 1;
+
+
+                while(true)
+                {
+
+                    // Get the bounding elements
+                    do { i++; } while (collectionCopy[i].subv < pivot.subv);
+                    do { j--; } while (collectionCopy[j].subv > pivot.subv);
+
+                    if (i >= j)
+                        break;
+
+                    SortablePair<T> tmp = collectionCopy[i];
+                    collectionCopy[i] = collectionCopy[j];
+                    collectionCopy[j] = tmp;
+
+                }
 
 
                 
-                if(iz - ia >= 1)
-                {
-                    int randomPivotIndex = random.Next(ia, iz + 1); // .Next is exclusive on upper bound, so +1
-        
-                    // B. SWAP the chosen pivot to the END (iz) so Lomuto works
-                    SortablePair<T> tempP = collectionCopy[randomPivotIndex];
-                    collectionCopy[randomPivotIndex] = collectionCopy[iz];
-                    collectionCopy[iz] = tempP;
                     
-                    SortablePair<T> pivot = collectionCopy[iz];
-                    int ix = -1 + ia;
 
+                
+                pivotPoints++;
+                partitions.Pop();
 
-                    for(int i = ia; i <= iz; i++) 
-                    {
-                        if(pivot.subv >= collectionCopy[i].subv)
-                        {
-                            ix++;
-                            SortablePair<T> tmp = collectionCopy[ix];
-                            collectionCopy[ix] = collectionCopy[i];
-                            collectionCopy[i] = tmp;
-                        }
-                    }
+                if (ia < j)
+                    partitions.Push((ia, j));
 
-
-                    pivotPoints++;
-                    ranges.Pop();
-
-
-                    if(ix - 1 > ia) // Check if left side has at least 2 elements
-                        ranges.Push((ia: ia, iz: ix - 1));
-
-
-                    if(ix + 1 < iz) // Check if right side has at least 2 elements
-                        ranges.Push((ia: ix + 1, iz: iz));
-
-                }
+                if (j + 1 < iz)
+                    partitions.Push((j + 1, iz));
 
             }
 
