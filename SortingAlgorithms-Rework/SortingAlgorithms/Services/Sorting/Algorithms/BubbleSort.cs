@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using SortingAlgorithms.Interfaces.Sorting;
 using SortingAlgorithms.Models.Tuples;
@@ -9,33 +10,52 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
     public class BubbleSort<T> : ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
+
+        private static double percentageDone = 0; 
+
         public BubbleSort()
         {
             
         }
 
-        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
+
+        public double getPercentage()
         {
-            IList<SortablePair<T>> collectionCopy = [.. items];
+            return percentageDone;
+        }
+
+        public List<SortablePair<T>> Sort(List<SortablePair<T>> items, CancellationToken? token)
+        {
+            percentageDone = 0; 
+            Console.WriteLine("Bubble Sort");
+            
+            return runSort(items, token);
+        }
+        
+        private List<SortablePair<T>> runSort(List<SortablePair<T>> items, CancellationToken? token)
+        {
 
             int indexCap = 0;
             
+            double nextPrint = 0;
+
             while (true)
             {
-                int fieldSize = collectionCopy.Count() - indexCap;
+                token?.ThrowIfCancellationRequested();
 
-                
+                int fieldSize = items.Count - indexCap;
+
                 bool sorted = true;
 
                 for(int i = 0; i < fieldSize - 1; i++)
                 {
-                    if(collectionCopy[i].subv > collectionCopy[i + 1].subv)
+                    if(items[i].subv > items[i + 1].subv)
                     {
-                        SortablePair<T> tmp = collectionCopy[i];
+                        SortablePair<T> tmp = items[i];
                         
-                        collectionCopy[i] = collectionCopy[i + 1];
+                        items[i] = items[i + 1];
                         
-                        collectionCopy[i+1] = tmp;
+                        items[i+1] = tmp;
 
                         sorted = false;
                     }
@@ -43,18 +63,24 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
                 indexCap++;
 
-                
+                if((indexCap * 100d / items.Count) >= nextPrint){
+                    percentageDone = indexCap / ((double)items.Count/100);
+                    nextPrint += 0.5d;
+                }
+
                 // In case of already sorted field, this will end the cycle;
                 // Either no change has been made or there is nothing to be moved around anymore;
                 
-                if(collectionCopy.Count() - indexCap == 0 || sorted)
+                if(items.Count - indexCap == 0 || sorted)
                 {
                     break;
                 }
-            }
 
-            return collectionCopy;
+                
+            }
             
+            percentageDone = 100;
+            return items;
         }
     }
 }

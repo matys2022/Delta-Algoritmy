@@ -10,34 +10,66 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
     public class HeapSort<T> : ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
+
+        private static double percentageDone = 0; 
+
         public HeapSort()
         {
             
         }
 
+
+        public double getPercentage()
+        {
+            return percentageDone;
+        }
+
         private int collectionSize = 0;
 
-        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
+        public List<SortablePair<T>> Sort(List<SortablePair<T>> items, CancellationToken? token)
         {
-            IList<SortablePair<T>> collectionCopy = [.. items];
-            
+            percentageDone = 0; 
+            Console.WriteLine("Heap Sort");
+           
 
-            collectionSize = collectionCopy.Count;
+            return runSort(items, token);
+
+
+        }
+
+        private List<SortablePair<T>> runSort(List<SortablePair<T>> items, CancellationToken? token)
+        {
+            
+            collectionSize = items.Count;
 
 
             // Sort the tree
             int Ix = collectionSize / 2 - 1; 
 
+            double nextPrint = 0;
             while (Ix >= 0)
             {
-                PopHeap(collectionCopy, Ix);
+                PopHeap(items, Ix, token);
                 Ix--;
+                
+                if((collectionSize - Ix) * 100d / collectionSize/2 >= nextPrint){
+                    percentageDone = (collectionSize - Ix) / ((double)collectionSize/100) / 2;
+                    nextPrint += 0.5d;
+                }
             }
 
             int tmpIx = 0;
 
+            nextPrint = 0;
             while (collectionSize > 1)
             {
+                
+                double per = ((items.Count - collectionSize) / ((double)items.Count/100) / 2) + 50;
+                
+                if(((items.Count - collectionSize) * 100d / items.Count) >= nextPrint){
+                    percentageDone = per;
+                    nextPrint += 0.5d;
+                }
 
                 int LeftChildIx = tmpIx * 2 + 1;
                 int RightChildIx = tmpIx * 2 + 2;
@@ -48,24 +80,27 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                     tmpIx = 0;
                 }
     
-                PopHeap(collectionCopy, tmpIx);
+                PopHeap(items, tmpIx, token);
 
-                SortablePair<T> tmp = collectionCopy[0];
+                SortablePair<T> tmp = items[0];
                 
-                collectionCopy[0] = collectionCopy[collectionSize - 1];
-                collectionCopy[collectionSize - 1] = tmp;
+                items[0] = items[collectionSize - 1];
+                items[collectionSize - 1] = tmp;
 
                 collectionSize --;
 
             }
 
-            return collectionCopy;
-
+            return items;
+            
         }
 
 
-        private void PopHeap(IList<SortablePair<T>> collectionCopy, int tmpIx)
+        private void PopHeap(IList<SortablePair<T>> items, int tmpIx, CancellationToken? token)
         {
+            
+            token?.ThrowIfCancellationRequested();
+
             int LeftChildIx = tmpIx * 2 + 1;
             int RightChildIx = tmpIx * 2 + 2;
 
@@ -78,11 +113,11 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
             
 
             // Find and swap the max heap
-            if(RightChildIx < collectionSize && collectionCopy[tmpIx].subv < collectionCopy[RightChildIx].subv && collectionCopy[LeftChildIx].subv < collectionCopy[RightChildIx].subv)
+            if(RightChildIx < collectionSize && items[tmpIx].subv < items[RightChildIx].subv && items[LeftChildIx].subv < items[RightChildIx].subv)
             {
                 LargestValueIx = RightChildIx;
 
-            }else if (collectionCopy[tmpIx].subv < collectionCopy[LeftChildIx].subv)
+            }else if (items[tmpIx].subv < items[LeftChildIx].subv)
             {
                 LargestValueIx = LeftChildIx;
             }
@@ -93,12 +128,12 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                 return;
             }
 
-            SortablePair<T> tmp = collectionCopy[tmpIx];
+            SortablePair<T> tmp = items[tmpIx];
                 
-            collectionCopy[tmpIx] = collectionCopy[LargestValueIx];
-            collectionCopy[LargestValueIx] = tmp;
+            items[tmpIx] = items[LargestValueIx];
+            items[LargestValueIx] = tmp;
 
-            PopHeap(collectionCopy, LargestValueIx);
+            PopHeap(items, LargestValueIx, token);
 
         }
     }

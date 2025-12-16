@@ -9,78 +9,106 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
     public class MergeSort<T> : ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
+
+        private static double percentageDone = 0; 
+
+        private static double factor;
         public MergeSort()
         {
             
         }
 
-        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
+        public double getPercentage()
         {
-            IList<SortablePair<T>> collectionCopy = [.. items];
-            
-            return Split(collectionCopy);
+            return percentageDone;
         }
 
-        private IList<SortablePair<T>> Split(IList<SortablePair<T>> collectionCopy)
+
+        public List<SortablePair<T>> Sort(List<SortablePair<T>> items, CancellationToken? token)
         {
-            if(collectionCopy.Count == 1)
-                return collectionCopy;
 
-            // Source - https://stackoverflow.com/a/10700594
-            // Posted by Saeed Amiri, modified by community. See post 'Timeline' for change history
-            // Retrieved 2025-12-07, License - CC BY-SA 3.0
+            percentageDone = 0; 
+            factor = 0;
+            Console.WriteLine("Merge Sort");
 
-            IList<SortablePair<T>> firstArray = collectionCopy.Take(collectionCopy.Count / 2).ToArray();
-            IList<SortablePair<T>> secondArray = collectionCopy.Skip(collectionCopy.Count / 2).ToArray();
+            int n = (int)Math.Round(Math.Log(items.Count, 2));
 
-            if(firstArray.Count > 1)
+            factor = 100d / (items.Count - 1);
+
+            return runSort(items, token);
+        }
+
+        public List<SortablePair<T>> runSort(List<SortablePair<T>> items, CancellationToken? token)
+        {
+            return Split(items, 0, items.Count, token);
+        }
+
+        private List<SortablePair<T>> Split(List<SortablePair<T>> items, int startIx, int endIx, CancellationToken? token)
+        {
+
+            token?.ThrowIfCancellationRequested();
+
+            int range = endIx - startIx;
+
+            if(range <= 1)
+                return items;
+
+            int mid = startIx + (int)Math.Round((double)(endIx - startIx) / 2);
+
+
+            if(mid - startIx > 1)
             {
-                firstArray = Split(firstArray);
+                Split(items, startIx, mid, token);
             }
-            if(secondArray.Count > 1)
+            if(endIx - mid > 1)
             {
-                secondArray = Split(secondArray);
+                Split(items, mid, endIx, token);
             }
             
 
-            return Merge(firstArray, secondArray);
 
+            return Merge(items, (startIx: startIx, endIx: mid), (startIx: mid, endIx: endIx), token);
+            
 
 
         }
 
-        private IList<SortablePair<T>> Merge(IList<SortablePair<T>> list1, IList<SortablePair<T>> list2)
+        private List<SortablePair<T>> Merge(List<SortablePair<T>> items, (int startIx, int endIx) range1, (int startIx, int endIx) range2, CancellationToken? token)
         {
-            IList<SortablePair<T>> largest = list1;
-            IList<SortablePair<T>> smallest = list2;
+            (int startIx, int endIx, int diff) largest = (range1.startIx, range1.endIx, range1.endIx - range1.startIx);
+            (int startIx, int endIx, int diff) smallest = (range2.startIx, range2.endIx, range2.endIx - range2.startIx);
 
-            IList<SortablePair<T>> merged = new List<SortablePair<T>>(){};
+            List<SortablePair<T>> merged = new List<SortablePair<T>>(){};
 
-            if(list1.Count < list2.Count)
+            if( largest.diff < smallest.diff )
             {
-                largest = list2;
-                smallest = list1;
+                (largest, smallest) = (smallest, largest);
             }
 
-            
-            int i = 0;
-            int y = 0;
-            
-            while(i+y < largest.Count + smallest.Count)
-            {
+            int i = largest.startIx;
+            int y = smallest.startIx;
 
-                if((smallest.Count - 1  < y) || (largest.Count - 1  >= i && largest[i].subv < smallest[y].subv))
+
+            while (i < range1.endIx && y < range2.endIx)
+            {
+                
+                token?.ThrowIfCancellationRequested();
+
+                if((smallest.diff - 1  < y) || (largest.diff - 1  >= i && items[i].subv < items[y].subv))
                 {
-                    merged.Add(largest[i]);
+                    merged.Add(items[i]);
                     i++;
                 }
                 else
                 {
-                    merged.Add(smallest[y]);
+                    merged.Add(items[y]);
                     y++;
                 }
                     
             }
+
+            percentageDone += factor;
+            
 
             return merged;
         }

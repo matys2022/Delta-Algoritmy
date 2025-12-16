@@ -9,30 +9,53 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
     public class InsertionSort<T> : ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
+
+        private static double percentageDone = 0; 
         public InsertionSort()
         {
             
         }
 
-        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
-        {
-            IList<SortablePair<T>> collectionCopy = [.. items];
 
-            for(int i = 0; i < collectionCopy.Count() - 1; i++)
+        public double getPercentage()
+        {
+            return percentageDone;
+        }
+
+        public List<SortablePair<T>> Sort(List<SortablePair<T>> items, CancellationToken? token)
+        {
+            percentageDone = 0; 
+            Console.WriteLine("Insertion Sort");
+
+            return runSort(items, token);
+        }
+
+        private List<SortablePair<T>> runSort(List<SortablePair<T>> items, CancellationToken? token)
+        {
+            double nextPrint = 0;
+
+            for(int i = 0; i < items.Count() - 1; i++)
             {
                 int tmpIx = i;
-                SortablePair<T> previousItem = collectionCopy[i];
+                SortablePair<T> previousItem = items[i];
+
+                if((i * 100d / items.Count) >= nextPrint){
+                    percentageDone = i / ((double)items.Count/100);
+                    nextPrint += 0.5d;
+                }
 
                 while (true)
                 {
-                    if(previousItem.subv > collectionCopy[tmpIx + 1].subv)
+                    token?.ThrowIfCancellationRequested();
+                    
+                    if(previousItem.subv > items[tmpIx + 1].subv)
                     {
 
-                        collectionCopy[tmpIx] = collectionCopy[tmpIx + 1];
-                        collectionCopy[tmpIx + 1] = previousItem;
+                        items[tmpIx] = items[tmpIx + 1];
+                        items[tmpIx + 1] = previousItem;
 
                         if(tmpIx-1 >= 0)
-                            {previousItem = collectionCopy[tmpIx-1];}
+                            {previousItem = items[tmpIx-1];}
                         else
                             {break;}
 
@@ -42,11 +65,11 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                     {
                         break;
                     }
+                    
                 }
             }
 
-            return collectionCopy;
-
+            return items;
         }
     }
 }

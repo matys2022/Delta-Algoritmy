@@ -9,33 +9,74 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
     public class SelectionSort<T> : ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
+
+        private static double percentageDone = 0; 
+
+        
+
         public SelectionSort()
         {
             
         }
-
-        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
+        public double getPercentage()
         {
-            
-            IList<SortablePair<T>> collectionCopy = [.. items];
+            return percentageDone;
+        }
 
+        public  List<SortablePair<T>> Sort(List<SortablePair<T>> items, CancellationToken? token)
+        {
+            percentageDone = 0;    
+
+            Console.WriteLine("Selection Sort");
+
+            return runSort(items, token);
+
+        }
+
+        private List<SortablePair<T>> runSort(List<SortablePair<T>> items, CancellationToken? token)
+        {
             int lastIx = -1;
 
-            for (int i = 0; i < collectionCopy.Count(); i++)
+            double nextPrint = 0;
+
+
+            for (int i = 0; i < items.Count - 1; i++)
             {
-                (int index, SortablePair<T> value) itemWithLowestValue = LowestElement<T>.Get(collectionCopy);
 
-                SortablePair<T> currentItem = collectionCopy[lastIx + 1];
+                token?.ThrowIfCancellationRequested();
 
-                collectionCopy[itemWithLowestValue.index] = currentItem;
+                if((i * 100 / (double)items.Count) >= nextPrint){
+                    percentageDone = i / ((double)items.Count/100);
+                    nextPrint += 0.5f;
+                }
 
-                collectionCopy[lastIx + 1] = new SortablePair<T>(subv: double.MaxValue, value: itemWithLowestValue.value.value);
+                int minIndex = lastIx + 1;
+
+
+
+                for (int j = lastIx + 1; j < items.Count; j++)
+                {
+                    SortablePair<T> element = items[j];
+
+                    if (element.subv < items[minIndex].subv)
+                    {
+                        minIndex = j;
+                    }
+                }
+
+                SortablePair<T> currentItem = items[lastIx + 1];
+
+                items[lastIx + 1] = items[minIndex];
+                
+                items[minIndex] = currentItem;
+
+                
 
                 lastIx = i;
+
             }
 
-            return collectionCopy;
-
+            return items;
         }
     }
 }

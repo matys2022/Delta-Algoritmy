@@ -10,17 +10,36 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
     public class RadixSort<T> : ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
+
+        private static double percentageDone = 0; 
+
+        private static double factor;
+
         public RadixSort()
         {
             
         }
-
-        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items)
+        
+        public double getPercentage()
         {
-            List<SortablePair<T>> collectionCopy = new List<SortablePair<T>>(items);
+            return percentageDone;
+        }
+        public List<SortablePair<T>> Sort(List<SortablePair<T>> items, CancellationToken? token)
+        {
+            percentageDone = 0; 
+            factor = 0;
 
+            Console.WriteLine("Radix Sort");
 
-            (int maxLenght, int exp) = GetMax(collectionCopy);
+            return runSort(items, token);
+        }
+
+        private List<SortablePair<T>> runSort(List<SortablePair<T>> items, CancellationToken? token)
+        {
+            
+            (int maxLenght, int exp) = GetMax(items);
+
+            factor = 100 / ((double)(maxLenght * items.Count));
                         
             for (int j = maxLenght - 1; j >= 0; j--)
             {
@@ -33,34 +52,42 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                 }
 
 
-                for (int i = 0; i < collectionCopy.Count; i++)
+                for (int i = 0; i < items.Count; i++)
                 {
-                    decimal currentItem = decimal.Parse(Math.Abs(collectionCopy[i].subv * Math.Pow(10, exp)).ToString().PadLeft(10, '0').Substring(0, 10)) * (collectionCopy[i].subv < 0 ? -1 : 1);
+
+                    token?.ThrowIfCancellationRequested();
+
+                    decimal currentItem = decimal.Parse(Math.Abs(items[i].subv * Math.Pow(10, exp)).ToString().PadLeft(10, '0').Substring(0, 10)) * (items[i].subv < 0 ? -1 : 1);
 
                     string subsidary_value = Math.Abs(currentItem)
-                    .ToString().Replace(",", String.Empty)
+                    .ToString().Replace(",", string.Empty)
                     .PadLeft(maxLenght, '0');
                     
                     // Add on index defined by the decimal interpretation of the ascii char
                     // To do that subtract 48 to get 0 for zero and so on
-                    sumArr[((int)subsidary_value[j]) - 48 + (currentItem < 0 ? 10 : 0)].Add(collectionCopy[i]);
+                    sumArr[((int)subsidary_value[j]) - 48 + (currentItem < 0 ? 10 : 0)].Add(items[i]);
+
+                    percentageDone += factor;
+
                 }
 
-                collectionCopy = new List<SortablePair<T>>();
+                items = new List<SortablePair<T>>();
                 
                 for (int i = 19; i >= 10; i--)
                 {
-                    collectionCopy.AddRange(sumArr[i]);
+                    items.AddRange(sumArr[i]);
                 }
                 for (int i = 0; i < 10; i++)
                 {
-                    collectionCopy.AddRange(sumArr[i]);
+                    items.AddRange(sumArr[i]);
                 }
                 
 
             }
 
-            return collectionCopy;
+            return items;
+
+
         }
 
         private static (int maxLenght, int exp) GetMax(List<SortablePair<T>> items)
@@ -81,7 +108,6 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                     maxLenght = len;
                 }
                 
-                // Modify to set the highiest number before the decimal places number.
                 int lenght = (floating.ToString()??"").Length;
 
                 if(lenght > exp){

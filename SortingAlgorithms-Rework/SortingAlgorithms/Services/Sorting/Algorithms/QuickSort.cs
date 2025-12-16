@@ -10,22 +10,34 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 {
     public class QuickSort<T> : ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
+
+        private static double percentageDone = 0; 
         public QuickSort()
         {
             
         }
 
-        public List<SortablePair<T>> Sort(List<SortablePair<T>> items)
+
+        public double getPercentage()
         {
-            List<SortablePair<T>> collectionCopy = items;
-            
+            return percentageDone;
+        }
+
+        public List<SortablePair<T>> Sort(List<SortablePair<T>> items, CancellationToken? token)
+        {            
+
+            percentageDone = 0; 
+
             Console.WriteLine("Quick Sort");
 
+            return runSort(items, token);
+        }
+
+        public List<SortablePair<T>> runSort(List<SortablePair<T>> items, CancellationToken? token)
+        {
             int pivotPoints = 0;
             
-            Stack<(int ia, int iz)> partitions = new Stack<(int ia, int iz)>([(ia: 0, iz: collectionCopy.Count - 1)]);
-
-            // int ix = (int)Math.Ceiling(((decimal) collectionCopy.Count - 1 )/ 2);
+            Stack<(int ia, int iz)> partitions = new Stack<(int ia, int iz)>([(ia: 0, iz: items.Count - 1)]);
 
             while(partitions.Count > 0)
             {
@@ -34,7 +46,7 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                 int ia =  nextBunch.ia ;
                 int iz = nextBunch.iz;
 
-                SortablePair<T> pivot = collectionCopy[ia + ((iz - ia) >> 1)];
+                SortablePair<T> pivot = items[ia + (int)Math.Round((decimal)((iz - ia) / 2))];
 
 
                 int i = ia - 1;
@@ -44,26 +56,29 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                 while(true)
                 {
 
-                    // Get the bounding elements
-                    do { i++; } while (collectionCopy[i].subv < pivot.subv);
-                    do { j--; } while (collectionCopy[j].subv > pivot.subv);
+                    token?.ThrowIfCancellationRequested();
+
+                    // Get the bounding indecies
+                    do { i++; } while (items[i].subv < pivot.subv);
+                    do { j--; } while (items[j].subv > pivot.subv);
 
                     if (i >= j)
                         break;
 
-                    SortablePair<T> tmp = collectionCopy[i];
-                    collectionCopy[i] = collectionCopy[j];
-                    collectionCopy[j] = tmp;
+                    SortablePair<T> tmp = items[i];
+                    items[i] = items[j];
+                    items[j] = tmp;
+
 
                 }
-
-
-                
-                    
-
                 
                 pivotPoints++;
                 partitions.Pop();
+
+                if(pivotPoints / ((double)items.Count / 100) > percentageDone)
+                {
+                    percentageDone = ((double)pivotPoints) / (items.Count / 100);
+                }
 
                 if (ia < j)
                     partitions.Push((ia, j));
@@ -73,7 +88,7 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
             }
 
-            return collectionCopy;
+            return items;
         }
     }
 }
