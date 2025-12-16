@@ -8,6 +8,9 @@ namespace SortingAlgorithms.Interfaces.Sorting
 {
     public interface ISortingAlgorithm<T> where T : IConvertible, IComparable
     {
-        public IList<SortablePair<T>> Sort(IList<SortablePair<T>> items);
+        public List<SortablePair<T>> Sort(List<SortablePair<T>> items, CancellationToken? token);
+
+        public double getPercentage();
+
     }
 }
