@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SortingAlgorithms.Factories;
 using SortingAlgorithms.Interfaces.Sorting;
 using SortingAlgorithms.Models.Tuples;
 
 namespace SortingAlgorithms.Services.Sorting
 {
-    public class SortingService<T> where T : IConvertible, IComparable
+    public class SortingService
     {
         
         public SortingService()
@@ -15,9 +16,12 @@ namespace SortingAlgorithms.Services.Sorting
 
         }
 
-        public IEnumerable<T> Sort(IEnumerable<T> items, ISortingAlgorithm<T> algorithm) 
+        public async  Task<IEnumerable<T>> Sort<T>(IEnumerable<T> items, Func<ISortingAlgorithm<T>> algorithmFactory, CancellationToken? token)  where T : IConvertible, IComparable 
         {
             
+
+            ISortingAlgorithm<T> sortingAlgorithm = algorithmFactory();
+
             List<SortablePair<T>> values = new List<SortablePair<T>>();
 
             // Double - Maybe decimal?
@@ -73,8 +77,8 @@ namespace SortingAlgorithms.Services.Sorting
                 }
             }
 
-
-            List<SortablePair<T>> sorted_values = algorithm.Sort(values).ToList();    
+            
+            List<SortablePair<T>> sorted_values = sortingAlgorithm.Sort(values, token).ToList();    
             
             return sorted_values.Select(x=>x.value);
             
