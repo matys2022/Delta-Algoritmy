@@ -174,8 +174,8 @@ namespace SortingAlgorithms.Globals
                 df
                 sx
             ";
+            // public static bool debug = true;
             public static bool debug = false;
-            // public static bool debug = false;
             public static string prefix = "../../../";
             public static string integers_0_to_4294967295 = (debug ? prefix : "") + "./source/integers_0_to_4294967295.txt";
             public static string rando_1M_cela_cisla = (debug ? prefix : "") + "./source/rando_1M_cela_cisla.txt";

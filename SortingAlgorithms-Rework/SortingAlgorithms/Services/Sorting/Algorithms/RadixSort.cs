@@ -57,7 +57,7 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
                     token?.ThrowIfCancellationRequested();
 
-                    decimal currentItem = decimal.Parse(Math.Abs(items[i].subv * Math.Pow(10, exp)).ToString().PadLeft(10, '0').Substring(0, 10)) * (items[i].subv < 0 ? -1 : 1);
+                    decimal currentItem = decimal.Parse(Math.Abs(items[i].subv * (decimal)Math.Pow(10, exp)).ToString().PadLeft(10, '0').Substring(0, 10)) * (items[i].subv < 0 ? -1 : 1);
 
                     string subsidary_value = Math.Abs(currentItem)
                     .ToString().Replace(",", string.Empty)
@@ -99,7 +99,7 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
 
 
-                int whole = int.Parse(str[0]);
+                uint whole = uint.Parse(str[0]);
                 int? floating = str.Length == 1 ? null : int.Parse(str[1].PadLeft(9, '0').Substring(0, 9));
                 
                 int len = (whole + (floating??0).ToString()).Length;

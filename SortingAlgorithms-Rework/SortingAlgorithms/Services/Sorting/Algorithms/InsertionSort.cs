@@ -32,21 +32,20 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
         private List<SortablePair<T>> runSort(List<SortablePair<T>> items, CancellationToken? token)
         {
-            double nextPrint = 0;
 
             for(int i = 0; i < items.Count() - 1; i++)
             {
                 int tmpIx = i;
                 SortablePair<T> previousItem = items[i];
 
-                if((i * 100d / items.Count) >= nextPrint){
-                    percentageDone = i / ((double)items.Count/100);
-                    nextPrint += 0.5d;
-                }
+                // if((i * 100d / items.Count) >= nextPrint){
+                percentageDone = i / ((double)items.Count/100);
+                    // nextPrint += 0.5d;
+                // }
 
                 while (true)
                 {
-                    token?.ThrowIfCancellationRequested();
+                     token?.ThrowIfCancellationRequested();
                     
                     if(previousItem.subv > items[tmpIx + 1].subv)
                     {

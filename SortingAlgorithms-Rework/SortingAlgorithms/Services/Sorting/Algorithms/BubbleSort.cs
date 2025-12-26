@@ -29,6 +29,8 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
             percentageDone = 0; 
             Console.WriteLine("Bubble Sort");
             
+
+
             return runSort(items, token);
         }
         
@@ -36,8 +38,6 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
         {
 
             int indexCap = 0;
-            
-            double nextPrint = 0;
 
             while (true)
             {
@@ -63,10 +63,12 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
                 indexCap++;
 
-                if((indexCap * 100d / items.Count) >= nextPrint){
-                    percentageDone = indexCap / ((double)items.Count/100);
-                    nextPrint += 0.5d;
-                }
+                double currentProgress =  (double)indexCap/(items.Count/100);
+
+
+                percentageDone = currentProgress;
+                    
+                
 
                 // In case of already sorted field, this will end the cycle;
                 // Either no change has been made or there is nothing to be moved around anymore;
@@ -78,8 +80,6 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
                 
             }
-            
-            percentageDone = 100;
             return items;
         }
     }

@@ -24,6 +24,8 @@ namespace SortingAlgorithms.Services.Testing
         public void TestAll<T>(string? path_to_file = null, string? data = null,  bool log = false, TimeSpan? timeout = null) where T : IComparable, IConvertible
         {
 
+            Console.WriteLine();
+            Console.WriteLine(new string('–', 10));
             Console.WriteLine($"Dataset {path_to_file}");
             Console.WriteLine(new string('–', 10));
             
@@ -47,161 +49,199 @@ namespace SortingAlgorithms.Services.Testing
             foreach(Func<ISortingAlgorithm<T>> algorithm in algorithms)
             {
                 Console.WriteLine();
-                var sw = Stopwatch.StartNew();
 
-                if(timeout != null)
-                {
-                    using var cts = new CancellationTokenSource((TimeSpan)timeout);
-
-                    {
-                        SortData<T>(loader, algorithm, path_to_file, data, log, cts.Token);
-                    }
-                    
-                    if (cts.Token.IsCancellationRequested == true)
-                    {
-                        Console.WriteLine("Operation timed out.");
-                        Console.WriteLine($"{algorithm().getPercentage()}% Finished");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Sort took {sw.Elapsed.TotalMilliseconds:F3} ms");
-                    }
-                }
-                else
-                {
-                    SortData<T>(loader, algorithm, path_to_file, data, log);
-                }
-                sw.Stop();
+                SortData<T>(loader, algorithm, path_to_file, data, log, timeout);
+                
             }
         }
         
 
-        public async Task SortData<T>(FileLoader loader, Func<ISortingAlgorithm<T>> algorithm, string? path_to_file = null, string? data = null,  bool log = false, CancellationToken? token = null) where T : IComparable, IConvertible
+        public void SortData<T>(FileLoader loader, Func<ISortingAlgorithm<T>> algorithm, string? path_to_file = null, string? data = null,  bool log = false, TimeSpan? timeout = null) where T : IComparable, IConvertible
         {
-            if(typeof(T) == typeof(int))
+            IEnumerable<T> ParsedSample;
+
+            if(typeof(T) == typeof(long))
             {
-                IEnumerable<T> ParsedIntSample = loader.load(path_to_file, data).
+                ParsedSample = loader.load(path_to_file, data).
+                Select(x => { 
+                    if (long.TryParse(x.Trim(), out long y)) 
+                        { return (T)(object)y; } 
+                    else 
+                        { Console.WriteLine($"{x} : One or more input values are invalid"); throw new Exception("One or more input values are invalid"); }  
+                    });
+                
+                sortInt(ParsedSample, algorithm, timeout);
+            } else if(typeof(T) == typeof(decimal))
+            {
+                ParsedSample = loader.load(path_to_file, data).
+                Select(x => { 
+                    if (decimal.TryParse(x.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out decimal y)) 
+                        { return (T)(object)y; } 
+                    else 
+                        { Console.WriteLine($"{x} : One or more input values are invalid"); throw new Exception("One or more input values are invalid"); } 
+                    });
+                
+                sortDecimal(ParsedSample, algorithm, timeout);
+            } else if(typeof(T) == typeof(uint))
+            {
+                ParsedSample = loader.load(path_to_file, data).
+                Select(x => { 
+                    if (uint.TryParse(x.Trim(), out uint y)) 
+                        { return (T)(object)y; } 
+                    else 
+                        { Console.WriteLine($"{x} : One or more input values are invalid"); throw new Exception("One or more input values are invalid"); }  
+                    });
+                
+                sortInt(ParsedSample, algorithm, timeout);
+            } else if(typeof(T) == typeof(int))
+            {
+                ParsedSample = loader.load(path_to_file, data).
                 Select(x => { 
                     if (int.TryParse(x.Trim(), out int y)) 
                         { return (T)(object)y; } 
                     else 
-                        { Console.WriteLine(x); throw new Exception("One or more input values are invalid"); } 
+                        { Console.WriteLine($"{x} : One or more input values are invalid"); throw new Exception("One or more input values are invalid"); }  
                     });
                 
-                await sortInt(ParsedIntSample, algorithm, token);
+                sortInt(ParsedSample, algorithm, timeout);
             } else if(typeof(T) == typeof(string))
             {
-                IEnumerable<T> ParsedStringSample = loader.load(path_to_file, data).Select(x => (T)(object)x.Trim());
+                ParsedSample = loader.load(path_to_file, data).Select(x => (T)(object)x.Trim());
 
-                await sortString(ParsedStringSample, algorithm, token);
+                sortString(ParsedSample, algorithm, timeout);
                 
-            } else if (typeof(T) ==typeof( double))
+            } else if (typeof(T) == typeof( double))
             {
-                IEnumerable<T> ParsedDoubleSample = loader.load(path_to_file, data).
+                ParsedSample = loader.load(path_to_file, data).
                 Select(x => { 
                     if (double.TryParse(x.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double y)) 
                         { return (T)(object)y; } 
                     else 
-                        { Console.WriteLine(x); throw new Exception("One or more input values are invalid"); } 
+                        { Console.WriteLine($"{x} : One or more input values are invalid"); throw new Exception("One or more input values are invalid"); }  
                     });
 
-                await sortDouble(ParsedDoubleSample, algorithm, token);
+                sortDouble(ParsedSample, algorithm, timeout);
 
 
             } else
                 throw new Exception("Unknown object type.");
         }
 
-        public async Task sortInt<D>(IEnumerable<D> ParsedIntSample, Func<ISortingAlgorithm<D>> algorithm, CancellationToken? token) where D : IConvertible, IComparable
+        public void sortInt<D>(IEnumerable<D> ParsedIntSample, Func<ISortingAlgorithm<D>> algorithm, TimeSpan? timeout) where D : IConvertible, IComparable
         {
-            Console.WriteLine("Int Sorted");
-
-            IEnumerable<D> IntSampleSorted = await sortingService.Sort(ParsedIntSample, algorithm, token);
-            
-            int IntPrev = int.MinValue;
-
-            foreach (D item in IntSampleSorted)
+            IEnumerable<D> IntSampleSorted = sortingService.Sort(ParsedIntSample, algorithm, timeout);
+            if(timeout == null)
             {
-                if(typeof(int) == typeof(D))
+                long IntPrev = long.MinValue;
+
+                foreach (D item in IntSampleSorted)
                 {
-                    if(IntPrev <= (int)(object)item)
+                    if(typeof(long) == typeof(D))
                     {
-                        IntPrev = (int)(object)item;
+                        if(IntPrev <= (long)(object)item)
+                        {
+                            IntPrev = (long)(object)item;
+                        }
+                        else
+                        {
+                            // throw new Exception("Not sorted");
+                            
+                        }
+                        // Console.WriteLine($"{item}");
+                    }
+                    
+                }
+            }
+        }
+
+
+
+        public void sortDouble<D>(IEnumerable<D> ParsedDoubleSample, Func<ISortingAlgorithm<D>> algorithm, TimeSpan? timeout) where D : IConvertible, IComparable
+        {
+
+            IEnumerable<D> DoubleSampleSorted = sortingService.Sort(ParsedDoubleSample, algorithm, timeout);
+            
+            double DoublePrev = double.MinValue;
+            
+            if(timeout == null)
+            {
+                foreach (D item in DoubleSampleSorted)
+                {
+                    if(DoublePrev <= (double)(object)item)
+                    {
+                        DoublePrev = (double)(object)item;
                     }
                     else
                     {
-                        // throw new Exception("Not sorted");
-                        
+                        throw new Exception("Not sorted");
                     }
                     // Console.WriteLine($"{item}");
                 }
-                
-            }
-        }
-
-
-
-        public async Task sortDouble<D>(IEnumerable<D> ParsedDoubleSample, Func<ISortingAlgorithm<D>> algorithm, CancellationToken? token) where D : IConvertible, IComparable
-        {
-
-            Console.WriteLine("Double Sorted");
-
-            IEnumerable<D> DoubleSampleSorted = await sortingService.Sort(ParsedDoubleSample, algorithm, token);
-            
-            double DoublePrev = double.MinValue;
-
-            foreach (D item in DoubleSampleSorted)
-            {
-                if(DoublePrev <= (double)(object)item)
-                {
-                    DoublePrev = (double)(object)item;
-                }
-                else
-                {
-                    throw new Exception("Not sorted");
-                }
-                // Console.WriteLine($"{item}");
             }
         }
         
-
-        public async Task sortString<D>(IEnumerable<D> ParsedStringSample, Func<ISortingAlgorithm<D>> algorithm, CancellationToken? token) where D : IConvertible, IComparable
+        public void sortDecimal<D>(IEnumerable<D> ParsedDecimalSample, Func<ISortingAlgorithm<D>> algorithm, TimeSpan? timeout) where D : IConvertible, IComparable
         {
 
-            Console.WriteLine("Strings Sorted");
+            IEnumerable<D> DecimalSampleSorted = sortingService.Sort(ParsedDecimalSample, algorithm, timeout);
             
-            IEnumerable<D> StringSampleSorted = await sortingService.Sort<D>(ParsedStringSample, algorithm, token);
-
-            int maxLenght = 0;
-            foreach (D item in StringSampleSorted)
+            if(timeout == null)
             {
-                string strItem = item.ToString()??"";
-                if(strItem.Length > maxLenght)
-                maxLenght = strItem.Length; 
+                decimal DecimalPrev = decimal.MinValue;
+
+                foreach (D item in DecimalSampleSorted)
+                {
+                    if(DecimalPrev <= (decimal)(object)item)
+                    {
+                        DecimalPrev = (decimal)(object)item;
+                    }
+                    else
+                    {
+                        throw new Exception("Not sorted");
+                    }
+                    // Console.WriteLine($"{item}");
+                }    
             }
+            
+        }
 
-
-
-            double StringPrev = 0;
-
-            foreach (D parsed in StringSampleSorted)
+        public void sortString<D>(IEnumerable<D> ParsedStringSample, Func<ISortingAlgorithm<D>> algorithm, TimeSpan? timeout) where D : IConvertible, IComparable
+        {
+            
+            IEnumerable<D> StringSampleSorted = sortingService.Sort<D>(ParsedStringSample, algorithm, timeout);
+            if(timeout == null)
             {
-                double StringSum = 0;
-                for (int i = 0; i < ((string)(object)parsed).Length; i++)
+                int maxLenght = 0;
+                foreach (D item in StringSampleSorted)
                 {
-                    StringSum += ((string)(object)parsed)[i] / Math.Pow(256, i+1);
-
+                    string strItem = item.ToString()??"";
+                    if(strItem.Length > maxLenght)
+                    maxLenght = strItem.Length; 
                 }
 
-                if(StringPrev <= StringSum)
+
+
+                double StringPrev = 0;
+
+                foreach (D parsed in StringSampleSorted)
                 {
-                    StringPrev = StringSum;
+                    double StringSum = 0;
+                    for (int i = 0; i < ((string)(object)parsed).Length; i++)
+                    {
+                        StringSum += ((string)(object)parsed)[i] / Math.Pow(256, i+1);
+
+                    }
+
+                    if(StringPrev <= StringSum)
+                    {
+                        StringPrev = StringSum;
+                    }
+                    else
+                    {
+                        throw new Exception("Not sorted");
+                    }
+                    // Console.WriteLine($"{parsed}");
                 }
-                else
-                {
-                    throw new Exception("Not sorted");
-                }
-                // Console.WriteLine($"{parsed}");
             }
         }
     }

@@ -43,7 +43,7 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
             collectionSize = items.Count;
 
 
-            // Sort the tree
+            // Build max heap
             int Ix = collectionSize / 2 - 1; 
 
             double nextPrint = 0;
@@ -60,6 +60,8 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
             int tmpIx = 0;
 
+
+            // Heapify the tree for every element
             nextPrint = 0;
             while (collectionSize > 1)
             {
@@ -71,11 +73,11 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
                     nextPrint += 0.5d;
                 }
 
-                int LeftChildIx = tmpIx * 2 + 1;
-                int RightChildIx = tmpIx * 2 + 2;
+                int leftChildIx = tmpIx * 2 + 1;
+                int rightChildIx = tmpIx * 2 + 2;
 
                 // If parent node doesn't exist, or it doesn't have any children, it is not possible to further propagate the node.
-                if(tmpIx >= collectionSize || (LeftChildIx >= collectionSize && RightChildIx >= collectionSize))
+                if(tmpIx >= collectionSize || (leftChildIx >= collectionSize && rightChildIx >= collectionSize))
                 {
                     tmpIx = 0;
                 }
@@ -95,45 +97,45 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
             
         }
 
-
+        // Heapify
         private void PopHeap(IList<SortablePair<T>> items, int tmpIx, CancellationToken? token)
         {
             
             token?.ThrowIfCancellationRequested();
 
-            int LeftChildIx = tmpIx * 2 + 1;
-            int RightChildIx = tmpIx * 2 + 2;
+            int leftChildIx = tmpIx * 2 + 1;
+            int rightChildIx = tmpIx * 2 + 2;
 
-            if(tmpIx >= collectionSize || LeftChildIx >= collectionSize )
+            if(tmpIx >= collectionSize || leftChildIx >= collectionSize )
             {
                 return;
             }
 
-            int LargestValueIx = tmpIx;
+            int largestValueIx = tmpIx;
             
 
             // Find and swap the max heap
-            if(RightChildIx < collectionSize && items[tmpIx].subv < items[RightChildIx].subv && items[LeftChildIx].subv < items[RightChildIx].subv)
+            if(rightChildIx < collectionSize && items[tmpIx].subv < items[rightChildIx].subv && items[leftChildIx].subv < items[rightChildIx].subv)
             {
-                LargestValueIx = RightChildIx;
+                largestValueIx = rightChildIx;
 
-            }else if (items[tmpIx].subv < items[LeftChildIx].subv)
+            }else if (items[tmpIx].subv < items[leftChildIx].subv)
             {
-                LargestValueIx = LeftChildIx;
+                largestValueIx = leftChildIx;
             }
             
             // Do not swap if either children is smaller
-            if(LargestValueIx == tmpIx)
+            if(largestValueIx == tmpIx)
             {
                 return;
             }
 
             SortablePair<T> tmp = items[tmpIx];
                 
-            items[tmpIx] = items[LargestValueIx];
-            items[LargestValueIx] = tmp;
+            items[tmpIx] = items[largestValueIx];
+            items[largestValueIx] = tmp;
 
-            PopHeap(items, LargestValueIx, token);
+            PopHeap(items, largestValueIx, token);
 
         }
     }

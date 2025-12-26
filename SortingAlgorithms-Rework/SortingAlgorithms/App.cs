@@ -19,23 +19,22 @@ namespace SortingAlgorithms
 
         public void Run()
         {
-
-            // Globals.TestingConstants.debug = false;
-            // Globals.TestingConstants.debug = true;
-
+            TimeSpan timeSpan = TimeSpan.FromSeconds(3600);
 
             SortingTester SortingDoubleService = new SortingTester();
 
-            // SortingDoubleService.TestAll<int>(Globals.TestingConstants.rando_1M_cela_cisla);
-            // SortingDoubleService.TestAll<string>(Globals.TestingConstants.random_words_1M, null, false, TimeSpan.FromSeconds(10));
-            // SortingDoubleService.TestAll<string>(null, Globals.TestingConstants.StringSampleLetters);
-            // SortingDoubleService.TestAll<int>(null, Globals.TestingConstants.IntSamplePartial);
-            // SortingDoubleService.TestAll<double>(Globals.TestingConstants.random_10M_interval);
+
+            SortingDoubleService.TestAll<int>(Globals.TestingConstants.rando_1M_cela_cisla, null, false, timeSpan);
+            SortingDoubleService.TestAll<int>(Globals.TestingConstants.random_integers_10M, null, false, timeSpan);
+            
+            SortingDoubleService.TestAll<uint>(Globals.TestingConstants.integers_0_to_4294967295, null, false, timeSpan);
+
+            SortingDoubleService.TestAll<decimal>(Globals.TestingConstants.random_10M_interval, null, false, timeSpan);
+            
+            SortingDoubleService.TestAll<string>(Globals.TestingConstants.random_words_1M, null, false, timeSpan);
+            SortingDoubleService.TestAll<string>(Globals.TestingConstants.random_words_10M, null, false, timeSpan);
             
 
-            // SortingDoubleService.TestAll<int>(Globals.TestingConstants.integers_0_to_4294967295, null, false, TimeSpan.FromSeconds(60));
-            SortingDoubleService.TestAll<string>(Globals.TestingConstants.random_words_1M, null, false, TimeSpan.FromSeconds(3600));
-            // SortingDoubleService.TestAll<double>(Globals.TestingConstants.random_10M_interval, null, false, TimeSpan.FromSeconds(60));
             
 
 

@@ -37,7 +37,6 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
         {
             int lastIx = -1;
 
-            double nextPrint = 0;
 
 
             for (int i = 0; i < items.Count - 1; i++)
@@ -45,10 +44,8 @@ namespace SortingAlgorithms.Services.Sorting.Algorithms
 
                 token?.ThrowIfCancellationRequested();
 
-                if((i * 100 / (double)items.Count) >= nextPrint){
-                    percentageDone = i / ((double)items.Count/100);
-                    nextPrint += 0.5f;
-                }
+
+                percentageDone = (double)i / ((double)items.Count/100);
 
                 int minIndex = lastIx + 1;
 

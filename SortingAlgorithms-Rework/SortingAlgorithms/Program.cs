@@ -1,4 +1,6 @@
-﻿namespace SortingAlgorithms
+﻿using System.Threading.Tasks;
+
+namespace SortingAlgorithms
 {
     public class Program
     {

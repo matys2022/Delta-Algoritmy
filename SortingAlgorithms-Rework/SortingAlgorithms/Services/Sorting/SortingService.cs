@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using SortingAlgorithms.Factories;
@@ -16,7 +17,7 @@ namespace SortingAlgorithms.Services.Sorting
 
         }
 
-        public async  Task<IEnumerable<T>> Sort<T>(IEnumerable<T> items, Func<ISortingAlgorithm<T>> algorithmFactory, CancellationToken? token)  where T : IConvertible, IComparable 
+        public IEnumerable<T> Sort<T>(IEnumerable<T> items, Func<ISortingAlgorithm<T>> algorithmFactory, TimeSpan? timeout)  where T : IConvertible, IComparable 
         {
             
 
@@ -25,23 +26,23 @@ namespace SortingAlgorithms.Services.Sorting
             List<SortablePair<T>> values = new List<SortablePair<T>>();
 
             // Double - Maybe decimal?
-            if(typeof(T) == typeof(double)){
+            if(typeof(T) == typeof(decimal)){
                 
                 foreach (T item in items)
                 {
-                    if(typeof(T) == typeof(double)){
-                        values.Add(new SortablePair<T>(subv: double.Parse(item.ToString()??""), value :item));
+                    if(typeof(T) == typeof(decimal)){
+                        values.Add(new SortablePair<T>(subv: decimal.Parse(item.ToString()??""), value :item));
                     }
                 }
 
             }
             
-            // Int
-            else if(typeof(T) == typeof(int))
+            // Long / Int / UInt
+            else if(typeof(T) == typeof(long) || typeof(T) == typeof(uint) || typeof(T) == typeof(int))
             {
                 foreach (T item in items)
                 {
-                    values.Add( new SortablePair<T>(subv: double.Parse(item.ToString()??""), value : item)); 
+                    values.Add( new SortablePair<T>(subv: decimal.Parse(item.ToString()??""), value : item)); 
                 }
             }
             
@@ -58,13 +59,13 @@ namespace SortingAlgorithms.Services.Sorting
 
                 foreach (T item in items)
                 {
-                    double sum = 0;
+                    decimal sum = 0;
                     string? parsed = item.ToString();
                     if(parsed != null)
                     {
                         for (int i = 0; i < parsed.Length; i++)
                         {
-                            sum += ((double)parsed[i]) / Math.Pow(256, (i+1));
+                            sum += parsed[i] / (decimal)Math.Pow(256, (i+1));
                         }
                     }
                     else
@@ -77,9 +78,39 @@ namespace SortingAlgorithms.Services.Sorting
                 }
             }
 
+            List<SortablePair<T>> sorted_values = new List<SortablePair<T>>();
+
+            var sw = Stopwatch.StartNew();
+
+            if(timeout != null)
+            {
+                using var cts = new CancellationTokenSource((TimeSpan)timeout);
+                try
+                {
+                    sorted_values = sortingAlgorithm.Sort(values, cts.Token).ToList();    
+                }catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                
+                if (cts.Token.IsCancellationRequested == true)
+                {
+                    Console.WriteLine("Operation timed out.");
+                    Console.WriteLine($"{sortingAlgorithm.getPercentage()}% Finished");
+                }
+                else
+                {
+                    Console.WriteLine($"Sort took {sw.Elapsed.TotalMilliseconds:F3} ms");
+                }
+            }
+            else
+            {
+                sorted_values = sortingAlgorithm.Sort(values, null).ToList();
+            }                    
             
-            List<SortablePair<T>> sorted_values = sortingAlgorithm.Sort(values, token).ToList();    
             
+            sw.Stop();
+
             return sorted_values.Select(x=>x.value);
             
         }
