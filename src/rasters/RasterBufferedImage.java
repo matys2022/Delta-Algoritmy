@@ -12,8 +12,8 @@ public class RasterBufferedImage implements Raster {
         return img;
     }
 
-    public RasterBufferedImage(int width, int height) {
-        img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    public RasterBufferedImage(int width, int height, int type) {
+        img = new BufferedImage(width, height,  type);
     }
 
     public void repaint(Graphics graphics) {
@@ -36,14 +36,17 @@ public class RasterBufferedImage implements Raster {
 
     @Override
     public void clear() {
-        Graphics g = img.getGraphics();
-        g.setColor(new Color(color));
-        g.clearRect(0, 0, img.getWidth(), img.getHeight());
+        Graphics2D g = (Graphics2D) img.getGraphics();
+
+        g.setComposite(AlphaComposite.Clear);
+        g.fillRect(0, 0, img.getWidth(), img.getHeight());
+        g.dispose();
     }
 
     @Override
     public void setClearColor(int color) {
         this.color = color;
+
     }
 
     @Override

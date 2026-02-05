@@ -10,4 +10,6 @@ public interface Rasterizer {
 
     void rasterize(Line line);
 
+    Color getColor();
+
 }
