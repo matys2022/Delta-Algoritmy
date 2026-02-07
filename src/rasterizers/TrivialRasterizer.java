@@ -72,11 +72,11 @@ public class TrivialRasterizer implements LineRasterizer {
 
         int odd = 0;
 
-        System.out.println(k);
+//        System.out.println(k);
 
         if(((factor <= 1 && factor >= 0) || diffX > Math.abs(diffY)) && diffX != 0)
         {
-            System.out.println("X loop");
+//            System.out.println("X loop");
 
             int start = a.getX();
             int end = Math.min(Math.max(b.getX(), 0), raster.getWidth() - 1);
@@ -105,7 +105,7 @@ public class TrivialRasterizer implements LineRasterizer {
 
         }else{
 
-            System.out.println("Y loop");
+//            System.out.println("Y loop");
 
             int start = a.getY();
             int end = b.getY();
@@ -116,8 +116,8 @@ public class TrivialRasterizer implements LineRasterizer {
                 end = tmp;
             }
 
-            System.out.println("Start: " + start);
-            System.out.println("End: " + end);
+//            System.out.println("Start: " + start);
+//            System.out.println("End: " + end);
 
 
             for(int y = Math.max(start, 0); y < Math.min(end, raster.getHeight() - space); y++){
@@ -138,15 +138,15 @@ public class TrivialRasterizer implements LineRasterizer {
                 }
 
                 // If the coordinates are outside the window, therefore the mouse gone out of the window.
-                try{
+//                try{
                     if(x < raster.getWidth() && x >= 0){
                         raster.setPixel(x, y, color.getRGB());
                     }
-                }catch(Exception e){
-                    System.out.println("X : " + x);
-                    System.out.println("Y : " + y);
-                    throw e;
-                }
+//                }catch(Exception e){
+//                    System.out.println("X : " + x);
+//                    System.out.println("Y : " + y);
+//                    throw e;
+//                }
 
 
             }
