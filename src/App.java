@@ -1,6 +1,9 @@
-import models.Line;
+import models.*;
+import models.Button;
+import models.MenuBar;
 import models.Point;
-import rasterizers.Rasterizer;
+import rasterizers.InterfaceRasterizer;
+import rasterizers.LineRasterizer;
 import rasterizers.TrivialRasterizer;
 import rasters.Raster;
 import rasters.RasterBufferedImage;
@@ -14,7 +17,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serial;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class App {
 
@@ -23,8 +25,9 @@ public class App {
     private final JPanel transparentPanel;
     private final Raster raster;
     private final Raster rasterPreview;
-    private final Rasterizer rasterizer;
-    private final Rasterizer previewRasterizer;
+    private final LineRasterizer rasterizer;
+    private final LineRasterizer previewRasterizer;
+    private final InterfaceRasterizer interfaceRasterizer;
     private MouseAdapter mouseAdapter;
     private KeyAdapter keyboardAdapter;
     private ArrayList<Line> canvasEntities;
@@ -117,6 +120,10 @@ public class App {
 
         rasterizer = new TrivialRasterizer( Color.CYAN, raster);
         previewRasterizer = new TrivialRasterizer( Color.CYAN, rasterPreview);
+        interfaceRasterizer = new InterfaceRasterizer(raster);
+
+
+
 
         createAdapters();
 
@@ -249,6 +256,34 @@ public class App {
 
             @Override
             public void mousePressed(MouseEvent e) {
+
+
+
+                ColorSet MenuColorSet = new ColorSet(new Color(0,100,117), new Color(13,53,63), null);
+
+                MenuBar menuBar = new MenuBar(1000, 0, 10, new BoundingDimensions(20, 20, 20, 20), new BoundingDimensions(10, 10, 10, 0), MenuColorSet);
+
+
+                ColorSet polygonBtnColors = new ColorSet(new Color(246,245,199), new Color(1,121,121) , new Color(245,125,108));
+                ColorSet polygonBtnHoverColors = new ColorSet(Color.MAGENTA, Color.MAGENTA, Color.MAGENTA);
+                BoundingDimensions polygonBtnBorders = new BoundingDimensions(1, 1, 1, 1);
+                BoundingDimensions polygonBtnPadding = new BoundingDimensions(10);
+
+                Button polygonBtn = new Button(Icons.polygonIcon, polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0), () -> {System.out.println("polygon button pressed");});
+                Button lineBtn = new Button(Icons.lineIcon, polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0), () -> {System.out.println("Line button pressed");});
+
+//                lineBtn.toggleColorState();
+
+                menuBar.addButton(lineBtn);
+                menuBar.addButton(polygonBtn);
+
+                System.out.println("Rasterize the menu");
+                interfaceRasterizer.rasterize(menuBar);
+
+                panel.repaint();
+
+
+
                 System.out.println("Pressed");
 
                 transparentPanel.setVisible(true);

@@ -6,10 +6,10 @@ import rasters.Raster;
 
 import java.awt.*;
 
-public class TrivialRasterizer implements Rasterizer {
+public class TrivialRasterizer implements LineRasterizer {
 
-    Color color;
-    Raster raster;
+    private Color color;
+    private Raster raster;
 
     public TrivialRasterizer(Color color, Raster raster) {
         this.color = color;
