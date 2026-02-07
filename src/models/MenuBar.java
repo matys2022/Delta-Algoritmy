@@ -15,7 +15,7 @@ public class MenuBar extends Element {
         super.children = new ArrayList<>();
 
         super.setWidth(width);
-        super.setHeight(height - margin.getTOP() - margin.getBOTTOM());
+//        super.setHeight(height - margin.getTOP() - margin.getBOTTOM());
 
 //        super.setContent_width(width - margin.getLEFT() - margin.getRIGHT());
 
@@ -30,7 +30,7 @@ public class MenuBar extends Element {
 
     public void addButton(Button button){
 
-        button.setCoordinates(this.getContent_width() + this.getPadding().getLEFT() + this.getMargin_left() + (!children.isEmpty() ? gap : 0),this.getPadding().getTOP() + this.getMargin_top());
+        button.setCoordinates(this.getContent_width() + this.getMargin_left() + (!children.isEmpty() ? gap : 0) - getPaddingRight(),this.getPadding().getTOP() + this.getMargin_top());
 
         if(button.getHeight() > super.getContent_height()){
 

@@ -8,12 +8,12 @@ public class BitmapElement extends Element{
 
 
     public BitmapElement(int content_width, int content_height, Bitmap bitmap, BoundingDimensions padding, ColorSet colorSet, BoundingDimensions border, Coordinates coordinates) {
-        super(content_width + padding.getLEFT() + padding.getRIGHT(), content_height + padding.getBOTTOM() + padding.getTOP(), padding, colorSet, border, coordinates);
+        super(content_width, content_height, padding, colorSet, border, coordinates);
         this.bitmap = bitmap;
     }
 
     public BitmapElement(int content_width, int content_height, Bitmap bitmap, BoundingDimensions padding, ColorSet colorSet) {
-        super(content_width + padding.getLEFT() + padding.getRIGHT(), content_height + padding.getBOTTOM() + padding.getTOP(), padding, colorSet);
+        super(content_width, content_height, padding, colorSet);
         this.bitmap = bitmap;
     }
 

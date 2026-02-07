@@ -2,6 +2,7 @@ package rasterizers;
 
 import models.BitmapElement;
 import models.Element;
+import models.WindowInterfaceMap;
 import rasters.Raster;
 
 import java.awt.*;
@@ -32,11 +33,13 @@ public class InterfaceRasterizer implements ElementRasterizer {
 
 
 
-        if(!hasBitmap) {
+//        if(!hasBitmap) {
 
-                endY +=   element.getPaddingBottom();
+//                endY +=   element.getPaddingBottom();
 //            endX += element.getPaddingRight() + element.getPaddingLeft();
-        }
+//        }
+
+//        WindowInterfaceMap.RegisterElement(element);
 
         // endX += ((ContentElement)element).getPaddingTop() + ((ContentElement)element).getPaddingBottom();
 

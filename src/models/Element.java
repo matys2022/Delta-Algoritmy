@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class Element {
+public abstract class Element {
     private Coordinates coordinates;
     private int width;
     private int height;
@@ -22,11 +22,11 @@ public class Element {
     public Element(int content_width, int content_height, BoundingDimensions padding, ColorSet colorSet, BoundingDimensions border, Coordinates coordinates) {
 
 
-        this.content_width = content_width;
-        this.content_height = content_height;
+        this.content_width = (content_width + padding.getLEFT() + padding.getRIGHT());
+        this.content_height = (content_height + padding.getBOTTOM() + padding.getTOP());
 
-        this.width = content_width ;
-        this.height = content_height;
+        this.width = this.content_width;
+        this.height = this.content_height;
 
         this.colorSet = colorSet;
         this.border = border;
