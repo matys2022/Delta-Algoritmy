@@ -67,8 +67,7 @@ public class InterfaceRasterizer implements ElementRasterizer {
 
 //                System.out.println("X: " + pixelX + " Y: " + pixelY);
 
-
-
+                WindowInterfaceMap.RegisterElementPixel(element, x, y);
 
                 if(
                     hasForeground &&

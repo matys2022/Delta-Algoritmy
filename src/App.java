@@ -17,6 +17,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class App {
 
@@ -33,6 +34,8 @@ public class App {
     private ArrayList<Line> canvasEntities;
     private boolean isControlDown;
     private boolean isShiftDown;
+    private final MenuBar menuBar;
+    private DrawingMode selectedMode = DrawingMode.None;
 
     private Point tempPointA, tempPointB;
 
@@ -58,6 +61,8 @@ public class App {
     }
 
     public App(int width, int height) {
+
+        WindowInterfaceMap.map = new Element[height][width];
 
         canvasEntities = new ArrayList<>();
         frame = new JFrame();
@@ -122,8 +127,34 @@ public class App {
         previewRasterizer = new TrivialRasterizer( Color.CYAN, rasterPreview);
         interfaceRasterizer = new InterfaceRasterizer(raster);
 
+        ColorSet MenuColorSet = new ColorSet(new Color(0,100,117), new Color(13,53,63), null);
+
+        menuBar = new MenuBar(1000, 0, 10, new BoundingDimensions(20, 20, 20, 20), new BoundingDimensions(10, 10, 10, 0), MenuColorSet);
 
 
+        ColorSet polygonBtnColors = new ColorSet(new Color(246,245,199), new Color(1,121,121) , new Color(245,125,108));
+        ColorSet polygonBtnHoverColors = new ColorSet(polygonBtnColors.getBACKGROUND(), Color.MAGENTA, polygonBtnColors.getFOREGROUND());
+        BoundingDimensions polygonBtnBorders = new BoundingDimensions(1, 1, 1, 1);
+        BoundingDimensions polygonBtnPadding = new BoundingDimensions(10);
+
+        Consumer<Element> polygonBtnAction = (Element button) ->{
+            System.out.println("polygon button pressed");
+            radio(button, DrawingMode.Polygon);
+
+        };
+
+        Consumer<Element> lineBtnAction = (Element button) ->{
+            System.out.println("Line button pressed");
+            radio(button, DrawingMode.Line);
+        };
+
+        Button polygonBtn = new Button(Icons.polygonIcon, polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0), polygonBtnAction);
+        Button lineBtn = new Button(Icons.lineIcon, polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0), lineBtnAction);
+
+        menuBar.addButton(lineBtn);
+        menuBar.addButton(polygonBtn);
+
+        interfaceRasterizer.rasterize(menuBar);
 
         createAdapters();
 
@@ -137,6 +168,33 @@ public class App {
         transparentPanel.addMouseMotionListener(mouseAdapter);
 
     }
+
+    public void radio(Element button, DrawingMode mode){
+        ArrayList<Element> siblings = menuBar.getChildren();
+
+        if(selectedMode == mode){
+            selectedMode = DrawingMode.None;
+        }
+
+        for(Element sibling : siblings) {
+
+            if(sibling instanceof ReactiveElement reactiveElement) {
+
+                if(reactiveElement.isActive()){
+
+                    if(!reactiveElement.equals(button)) {
+
+                        reactiveElement.toggleColorState();
+
+                    }else{
+                        selectedMode = mode;
+                    }
+
+                }
+            }
+        }
+    }
+
 
     int last_x = 0;
     int last_y = 0;
@@ -220,9 +278,13 @@ public class App {
 
                 tempPointB = new Point(x, y);
 
+
+
                 Line line = drawLine(tempPointA, tempPointB, Color.ORANGE);
 
                 previewRasterizer.rasterize(line);
+
+                interfaceRasterizer.rasterize(menuBar);
 
                 transparentPanel.repaint();
 
@@ -238,11 +300,23 @@ public class App {
 
                 frame.add(panel, BorderLayout.CENTER);
 
+                if(last_y == e.getY() && last_x == e.getX()){
+                    Element element = WindowInterfaceMap.GetElement(last_x, last_y);
+                    if(element instanceof ActionElement){
+                        ((ActionElement)element).RunAction();
+                    }
+                }
+
+
+
+
                 tempPointB = new Point(e.getX(), e.getY());
 
                 Line line = drawLine(tempPointA, tempPointB, Color.CYAN);
 
                 rasterizer.rasterize(line);
+
+                interfaceRasterizer.rasterize(menuBar);
 
                 canvasEntities.add(line);
 
@@ -257,27 +331,7 @@ public class App {
             @Override
             public void mousePressed(MouseEvent e) {
 
-
-
-                ColorSet MenuColorSet = new ColorSet(new Color(0,100,117), new Color(13,53,63), null);
-
-                MenuBar menuBar = new MenuBar(1000, 0, 10, new BoundingDimensions(20, 20, 20, 20), new BoundingDimensions(10, 10, 10, 0), MenuColorSet);
-
-
-                ColorSet polygonBtnColors = new ColorSet(new Color(246,245,199), new Color(1,121,121) , new Color(245,125,108));
-                ColorSet polygonBtnHoverColors = new ColorSet(Color.MAGENTA, Color.MAGENTA, Color.MAGENTA);
-                BoundingDimensions polygonBtnBorders = new BoundingDimensions(1, 1, 1, 1);
-                BoundingDimensions polygonBtnPadding = new BoundingDimensions(10);
-
-                Button polygonBtn = new Button(Icons.polygonIcon, polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0), () -> {System.out.println("polygon button pressed");});
-                Button lineBtn = new Button(Icons.lineIcon, polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0), () -> {System.out.println("Line button pressed");});
-
-//                lineBtn.toggleColorState();
-
-                menuBar.addButton(lineBtn);
-                menuBar.addButton(polygonBtn);
-
-                System.out.println("Rasterize the menu");
+//                System.out.println("Rasterize the menu");
                 interfaceRasterizer.rasterize(menuBar);
 
                 panel.repaint();

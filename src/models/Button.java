@@ -1,9 +1,11 @@
 package models;
 
-public class Button extends ReactiveElement implements ActionElement{
-    private Runnable buttonConsumer;
+import java.util.function.Consumer;
 
-    public Button(int[][] contentBitMap, BoundingDimensions padding, ColorSet colorSet, ColorSet secondaryColorSet, BoundingDimensions border, Coordinates coordinates, Runnable action) {
+public class Button extends ReactiveElement implements ActionElement{
+    private final Consumer<Element> buttonConsumer;
+
+    public Button(int[][] contentBitMap, BoundingDimensions padding, ColorSet colorSet, ColorSet secondaryColorSet, BoundingDimensions border, Coordinates coordinates, Consumer<Element> action) {
         super(getMaxLength(contentBitMap), contentBitMap.length, new Bitmap(contentBitMap, colorSet.getFOREGROUND()), padding, colorSet, secondaryColorSet,  border, coordinates);
         this.buttonConsumer = action;
     }
@@ -30,6 +32,7 @@ public class Button extends ReactiveElement implements ActionElement{
 
     @Override
     public void RunAction() {
-        buttonConsumer.run();
+        this.toggleColorState();
+        buttonConsumer.accept(this);
     }
 }

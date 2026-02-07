@@ -46,4 +46,7 @@ public class ReactiveElement extends BitmapElement {
         this.isActive = !this.isActive;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
 }
