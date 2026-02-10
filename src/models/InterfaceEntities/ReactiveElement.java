@@ -1,4 +1,4 @@
-package models;
+package models.InterfaceEntities;
 
 import java.awt.*;
 
@@ -7,8 +7,8 @@ public class ReactiveElement extends BitmapElement {
     protected ColorSet secondaryColorSet;
     private boolean isActive = false;
 
-    public ReactiveElement(int content_width, int content_height, Bitmap bitmap, BoundingDimensions padding, ColorSet colorSet, ColorSet secondaryColorSet, BoundingDimensions border, Coordinates coordinates) {
-        super(content_width, content_height, bitmap, padding, colorSet, border, coordinates);
+    public ReactiveElement(int content_width, int content_height, Bitmap bitmap, BoundingDimensions padding, ColorSet colorSet, ColorSet secondaryColorSet, BoundingDimensions border, Coordinates coordinates, Element parent) {
+        super(content_width, content_height, bitmap, padding, colorSet, border, coordinates, parent);
         this.secondaryColorSet = secondaryColorSet;
 
     }
@@ -19,11 +19,11 @@ public class ReactiveElement extends BitmapElement {
     }
 
     public ReactiveElement(BitmapElement bitmapElement, ColorSet secondaryColorSet) {
-       this(bitmapElement.getContent_width(), bitmapElement.getContent_height(), bitmapElement.getBitmap(), bitmapElement.getPadding(), bitmapElement.colorSet, secondaryColorSet,  bitmapElement.border, bitmapElement.getCoordinates());
+       this(bitmapElement.getContent_width(), bitmapElement.getContent_height(), bitmapElement.getBitmap(), bitmapElement.getPadding(), bitmapElement.colorSet, secondaryColorSet,  bitmapElement.border, bitmapElement.getCoordinates(), bitmapElement.getParent());
     }
 
     public ReactiveElement(ReactiveElement reactiveElement) {
-        this(reactiveElement.getContent_width(), reactiveElement.getContent_height(), reactiveElement.getBitmap(), reactiveElement.getPadding(), reactiveElement.colorSet, reactiveElement.secondaryColorSet,  reactiveElement.border, reactiveElement.getCoordinates());
+        this(reactiveElement.getContent_width(), reactiveElement.getContent_height(), reactiveElement.getBitmap(), reactiveElement.getPadding(), reactiveElement.colorSet, reactiveElement.secondaryColorSet,  reactiveElement.border, reactiveElement.getCoordinates(), reactiveElement.getParent());
     }
 
     public Color getBACKGROUND_SELECTED() {
@@ -49,4 +49,9 @@ public class ReactiveElement extends BitmapElement {
     public boolean isActive() {
         return isActive;
     }
+
+    public void setSecondaryColorSet(ColorSet secondaryColorSet) {
+        this.secondaryColorSet = secondaryColorSet;
+    }
+
 }

@@ -1,8 +1,7 @@
-package models;
+package models.InterfaceEntities;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Optional;
 
 public abstract class Element {
     private Coordinates coordinates;
@@ -18,8 +17,9 @@ public abstract class Element {
     protected BoundingDimensions border;
     protected ArrayList<Element> children;
     private BoundingDimensions padding;
+    private Element parent;
 
-    public Element(int content_width, int content_height, BoundingDimensions padding, ColorSet colorSet, BoundingDimensions border, Coordinates coordinates) {
+    public Element(int content_width, int content_height, BoundingDimensions padding, ColorSet colorSet, BoundingDimensions border, Coordinates coordinates, Element parent) {
 
 
         this.content_width = (content_width + padding.getLEFT() + padding.getRIGHT());
@@ -37,7 +37,7 @@ public abstract class Element {
 
     }
     public Element(int content_width, int content_height, BoundingDimensions padding, ColorSet colorSet) {
-        this(content_width, content_height, padding, colorSet, new BoundingDimensions(0, 0, 0, 0), new Coordinates(0, 0));
+        this(content_width, content_height, padding, colorSet, new BoundingDimensions(0, 0, 0, 0), new Coordinates(0, 0), null);
     }
 
 
@@ -132,13 +132,13 @@ public abstract class Element {
 
     protected void setContent_width(int content_width) {
 //        this.width = (this.width - this.content_width) + (content_width +  padding.getLEFT() + padding.getRIGHT());
-        this.content_width = content_width;
+        this.content_width = Math.clamp(content_width, padding.getLEFT() + padding.getRIGHT(), Integer.MAX_VALUE);
 //        this.width = content_width +  margin_left + margin_right;
     }
 
     protected void setContent_height(int content_height) {
 //        this.height = (this.height - this.content_height) + (content_height +  padding.getTOP() + padding.getBOTTOM());
-        this.content_height = content_height;
+        this.content_height = Math.clamp(content_height, padding.getBOTTOM() + padding.getTOP(), Integer.MAX_VALUE);
 
     }
 
@@ -184,5 +184,25 @@ public abstract class Element {
 
     public int getPaddingBottom(){
         return padding.getBOTTOM();
+    }
+
+    public Element getParent() {
+        return parent;
+    }
+
+    public void setParent(Element parent) {
+        this.parent = parent;
+    }
+
+    public void setPadding(BoundingDimensions padding) {
+        this.padding = padding;
+    }
+
+    public void setColorSet(ColorSet colorSet) {
+        this.colorSet = colorSet;
+    }
+
+    public void setBorder(BoundingDimensions border) {
+        this.border = border;
     }
 }

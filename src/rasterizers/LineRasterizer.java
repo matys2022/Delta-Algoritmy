@@ -1,6 +1,6 @@
 package rasterizers;
 
-import models.Line;
+import models.CanvasEntities.Line;
 
 import java.awt.*;
 

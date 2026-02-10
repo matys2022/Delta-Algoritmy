@@ -1,6 +1,4 @@
-package models;
-
-import java.awt.*;
+package models.InterfaceEntities;
 
 public interface ActionElement{
 

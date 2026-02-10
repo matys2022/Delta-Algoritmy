@@ -1,6 +1,6 @@
 package models;
 
-import java.util.ArrayList;
+import models.InterfaceEntities.Element;
 
 public class WindowInterfaceMap {
     public static Element[][] map;

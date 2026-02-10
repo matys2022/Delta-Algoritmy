@@ -1,4 +1,4 @@
-package models;
+package models.InterfaceEntities;
 
 public class BoundingDimensions {
     private int LEFT;

@@ -1,9 +1,6 @@
 package rasterizers;
 
-import models.Element;
-import models.Line;
-
-import java.awt.*;
+import models.InterfaceEntities.Element;
 
 public interface ElementRasterizer  {
 

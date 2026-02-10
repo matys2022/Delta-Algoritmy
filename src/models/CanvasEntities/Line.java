@@ -1,4 +1,4 @@
-package models;
+package models.CanvasEntities;
 
 import java.awt.*;
 
@@ -12,7 +12,7 @@ public class Line {
 
 
 
-    public Line(Point pointA, Point pointB, Color color, int width, int space,  int step,  boolean snapping) {
+    public Line(Point pointA, Point pointB, Color color, int width, int space, int step, boolean snapping) {
         this.pointA = pointA;
         this.pointB = pointB;
         this.color = color;

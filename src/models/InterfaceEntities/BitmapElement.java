@@ -1,14 +1,14 @@
-package models;
+package models.InterfaceEntities;
 
 import java.awt.*;
 
-public class BitmapElement extends Element{
+public class BitmapElement extends Element {
 
     private Bitmap bitmap;
 
 
-    public BitmapElement(int content_width, int content_height, Bitmap bitmap, BoundingDimensions padding, ColorSet colorSet, BoundingDimensions border, Coordinates coordinates) {
-        super(content_width, content_height, padding, colorSet, border, coordinates);
+    public BitmapElement(int content_width, int content_height, Bitmap bitmap, BoundingDimensions padding, ColorSet colorSet, BoundingDimensions border, Coordinates coordinates, Element parent) {
+        super(content_width, content_height, padding, colorSet, border, coordinates, parent);
         this.bitmap = bitmap;
     }
 
@@ -18,11 +18,11 @@ public class BitmapElement extends Element{
     }
 
     public BitmapElement(Element element, Bitmap bitmap, BoundingDimensions padding){
-        this(element.getContent_width(), element.getContent_height(), bitmap, padding, element.colorSet, element.border,  element.getCoordinates());
+        this(element.getContent_width(), element.getContent_height(), bitmap, padding, element.colorSet, element.border,  element.getCoordinates(), null);
     }
 
     public BitmapElement(BitmapElement bitmapElement) {
-        this(bitmapElement.getContent_width(), bitmapElement.getContent_height(), bitmapElement.bitmap, bitmapElement.getPadding(), bitmapElement.colorSet, bitmapElement.border, bitmapElement.getCoordinates());
+        this(bitmapElement.getContent_width(), bitmapElement.getContent_height(), bitmapElement.bitmap, bitmapElement.getPadding(), bitmapElement.colorSet, bitmapElement.border, bitmapElement.getCoordinates(), bitmapElement.getParent());
     }
 
     public int[][] getBitmapContent() {

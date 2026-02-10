@@ -1,7 +1,7 @@
 package rasterizers;
 
-import models.Line;
-import models.Point;
+import models.CanvasEntities.Line;
+import models.CanvasEntities.Point;
 import rasters.Raster;
 
 import java.awt.*;
@@ -27,129 +27,127 @@ public class TrivialRasterizer implements LineRasterizer {
         Point a = new Point(line.getPointA());
         Point b = new Point(line.getPointB());
 
-        boolean swapped = a.getX() > b.getX();
+
 
         int diffX = b.getX() - a.getX();
         int diffY = b.getY() - a.getY();
 
         int step = line.getStep();
         int space = line.getSpace();
+        boolean swapped = a.getX() > b.getX();
         boolean hasSnapping = line.isSnapping();
 
         double k = (double)(b.getY() - a.getY()) / (diffX != 0 ? diffX : 1 );
 
         double factor = Math.abs(k);
 
-        if(hasSnapping){
-
-
-
-            if (factor < 0.5 && factor > 0){
-                // Snap to X axis
-                k = 0;
-            }else
-
-            if (factor <= 1.5 && factor >= 1){
-                // Halve it
-                k =  (k > 0 ? 1 : -1);
-            }else
-
-            if (factor > 0.5 &&  factor <= 1){
-                k = (k > 0 ? 1 : -1);
-            }else
-
-            if(factor > 1.5){
-                k = (k > 0 ? raster.getHeight() : -(raster.getHeight())) * (swapped ? -1 : 1);
-            }
-
-        }
-
-
         double q = a.getY() - a.getX() * k;
-
-
-
 
         int odd = 0;
 
-//        System.out.println(k);
-
-        if(((factor <= 1 && factor >= 0) || diffX > Math.abs(diffY)) && diffX != 0)
+        if((factor < 1) && (diffX != 0 || diffY == 0))
         {
 //            System.out.println("X loop");
 
-            int start = a.getX();
-            int end = Math.min(Math.max(b.getX(), 0), raster.getWidth() - 1);
+            int start = Math.min(Math.max(a.getX(), 0), raster.getWidth() - space );
+            int end = Math.min(Math.max(b.getX(), 0), raster.getWidth() - space);
 
-            if(start >= end){
-                int tmp = start;
-                start = end;
-                end = tmp;
-            }
 
-            for(int x = start; x < end; x++){
+//            System.out.println("Start: " + start + " | End: " + end);
 
-                if(odd++ == step){
-                    x+=space;
-                    odd = 0;
+//            if((a.getY() == b.getY() ))
+//            {
+//
+//                if(start > end)
+//                {
+//                    int tmp = start;
+//                    start = end;
+//                    end = tmp;
+//
+//
+//                }
+//
+//                for(int x = start; x < end; x++){
+//                    System.out.println("Same!!!!");
+//                    raster.setPixel(x, a.getY(), line.getColor().getRGB());
+//                }
+//
+//
+//            }
+//            else {
+                int currentStart = Math.min(start, end);
+                int currentEnd = Math.max(start, end);
+
+//                System.out.println("Start: " + currentStart + " | End: " + currentEnd);
+
+                for (int x = currentStart; x < currentEnd; x++) {
+
+                    if (odd++ == step) {
+                        x += space;
+                        odd = 0;
+
+                        if (x >= currentEnd) break;
+                    }
+
+                    int y = (int) Math.round((k * (double) x + q));
+
+                    // If the coordinates are outside the window, therefore the mouse gone out of the window.
+                    if (y < raster.getHeight() && y > 0) {
+                        raster.setPixel(x, y, line.getColor().getRGB());
+                    }
+
                 }
+//            }
 
-                int y = (int)Math.round((k*(double) x + q));
-
-                // If the coordinates are outside the window, therefore the mouse gone out of the window.
-                if(y < raster.getHeight() && y > 0)
-                {
-                    raster.setPixel(x, y, color.getRGB());
-                }
-            }
 
         }else{
-
+//
 //            System.out.println("Y loop");
+//
+            int start = Math.min(Math.max(a.getY(), 0), raster.getHeight() - space);
+            int end = Math.min(Math.max(b.getY(), 0), raster.getHeight() - space);
 
-            int start = a.getY();
-            int end = b.getY();
-
-            if(start >= end){
-                int tmp = start;
-                start = end;
-                end = tmp;
-            }
-
-//            System.out.println("Start: " + start);
-//            System.out.println("End: " + end);
+//            System.out.println();
 
 
-            for(int y = Math.max(start, 0); y < Math.min(end, raster.getHeight() - space); y++){
-
-                if(odd++ == step){
-                    y+=space;
-                    odd = 0;
-                }
-
-
-                int x = (int)Math.round(((double)y-q)/k);
-
-
-
-                // When a straight line has been drawn, this will ensure, that it will actually be straight
-                if(diffX == 0){
-                    x = a.getX();
-                }
-
-                // If the coordinates are outside the window, therefore the mouse gone out of the window.
-//                try{
-                    if(x < raster.getWidth() && x >= 0){
-                        raster.setPixel(x, y, color.getRGB());
-                    }
-//                }catch(Exception e){
-//                    System.out.println("X : " + x);
-//                    System.out.println("Y : " + y);
-//                    throw e;
+//            if((a.getX() == b.getX() ))
+//            {
+//
+//                for(int y = start; y < end; y++){
+//                    System.out.println("Same!!!!");
+//                    raster.setPixel(a.getX(), y, line.getColor().getRGB());
 //                }
+//            }else {
+
+                int currentStart = Math.min(start, end);
+                int currentEnd = Math.max(start, end);
+
+//                System.out.println("Start: " + currentStart + " | End: " + currentEnd);
+
+                for (int y = currentStart; y < currentEnd; y++) {
+
+                    if (odd++ == step) {
+                        y += space;
+                        odd = 0;
+                        if (y >= currentEnd) break;
+                    }
+
+                    int x = (int) Math.round(((double) y - q) / k );
+
+                    // When a straight line has been drawn, this will ensure, that it will actually be straight
+                    if (diffX == 0) {
+                        x = a.getX();
+                    }
+
+                    // If the coordinates are outside the window, therefore the mouse gone out of the window.
+                    if (x < raster.getWidth() && x >= 0) {
+                        raster.setPixel(x, y, line.getColor().getRGB());
+                    }
 
 
-            }
+
+                }
+//            }
         }
 
     }
