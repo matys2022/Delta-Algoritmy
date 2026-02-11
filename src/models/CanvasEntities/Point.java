@@ -1,6 +1,6 @@
 package models.CanvasEntities;
 
-public class Point {
+public class Point implements CanvasEntity{
 
     int x;
     int y;
@@ -27,5 +27,25 @@ public class Point {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    @Override
+    public void modifyPoint(Point point, int x, int y) {
+        setX(x);
+        setY(y);
+    }
+
+    @Override
+    public Point getPoint(int x, int y) {
+        if(this.x == x && this.y == y){
+            return this;
+        }else{
+            return null;
+        }
+    }
+
+    @Override
+    public Point getClosestChild(Point point) {
+        return this;
     }
 }

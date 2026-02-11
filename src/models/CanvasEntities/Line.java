@@ -2,7 +2,7 @@ package models.CanvasEntities;
 
 import java.awt.*;
 
-public class Line {
+public class Line implements CanvasEntity{
 
     Point pointA, pointB;
     Color color;
@@ -36,6 +36,9 @@ public class Line {
     }
     public Line(Point pointA, Point pointB, Color color, int space, int step, boolean snapping) {
         this(pointA, pointB, color, 1, space, step, snapping);
+    }
+    public Line(Line line){
+        this(line.getPointA(), line.getPointB(), line.color, line.width, line.space, line.step, line.snapping);
     }
 
 
@@ -94,5 +97,34 @@ public class Line {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    @Override
+    public void modifyPoint(Point point, int x, int y) {
+        if(pointA.equals(point)){
+            pointA.modifyPoint(point, x, y);
+        }else if(pointB.equals(point)){
+            pointB.modifyPoint(point, x, y);
+        }
+    }
+
+    @Override
+    public Point getPoint(int x, int y) {
+
+        if(pointA.getPoint(x, y) != null){
+            return pointA;
+        }else if(pointB.getPoint(x, y) != null){
+            return pointB;
+        }
+        return null;
+    }
+
+    @Override
+    public Point getClosestChild(Point point) {
+        if(pointA.equals(point)){
+            return pointB;
+        }else{
+            return pointA;
+        }
     }
 }
