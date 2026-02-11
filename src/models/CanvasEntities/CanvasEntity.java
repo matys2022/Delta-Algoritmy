@@ -6,4 +6,6 @@ public interface CanvasEntity {
 
     Point getPoint(int x, int y);
 
+    Point getClosestChild(Point point);
+
 }

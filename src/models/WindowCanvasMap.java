@@ -8,22 +8,26 @@ import java.awt.*;
 import java.util.*;
 
 public class WindowCanvasMap {
-    private CanvasMapPair[][] baseMap;
+    private final CanvasMapPair[][] baseMap;
 
-    private Map<Long, Deque<CanvasEntity>> stackMap;
+    private final Map<Long, Deque<CanvasEntity>> stackMap;
 
-    private ArrayDeque<Long> availableIds = new ArrayDeque<Long>();
+    private final ArrayDeque<Long> availableIds = new ArrayDeque<Long>();
 
     public WindowCanvasMap(int width, int height){
         baseMap = new CanvasMapPair[height][width];
+        stackMap = new HashMap<>();
     }
 
     private long nextId = 0;
 
     public void addCanvasEntityPoint(int x, int y, CanvasEntity canvasEntity){
+        if(y > baseMap.length || x >  baseMap[0].length || y < 0 || x < 0){
+            return; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
+        }
         CanvasMapPair canvasPoint = baseMap[y][x];
 
-        if (canvasPoint.getCanvasEntity() == null) { // If the pixel is totally empty, add the entity
+        if (canvasPoint == null || canvasPoint.getCanvasEntity() == null) { // If the pixel is totally empty, add the entity
             baseMap[y][x] = new CanvasMapPair(-1, canvasEntity);
             return;
         }
@@ -57,6 +61,9 @@ public class WindowCanvasMap {
     }
 
     public CanvasEntity popCanvasEntityPoint(int x, int y){
+        if(y > baseMap.length || x >  baseMap[0].length || y < 0 || x < 0){
+            return null; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
+        }
         CanvasMapPair canvasPoint = baseMap[y][x];
 
         if(canvasPoint == null){
@@ -87,6 +94,10 @@ public class WindowCanvasMap {
     }
 
     public CanvasEntity peekCanvasEntityPoint(int x, int y){
+        if(y > baseMap.length || x >  baseMap[0].length || y < 0 || x < 0){
+            return null; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
+        }
+
         CanvasMapPair canvasPoint = baseMap[y][x];
 
         if(canvasPoint == null){ // Point is not associated with any canvas entity
