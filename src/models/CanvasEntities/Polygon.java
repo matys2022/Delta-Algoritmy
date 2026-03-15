@@ -4,30 +4,35 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Polygon implements CanvasEntity{
+public class Polygon extends CanvasShape implements CanvasEntity, PolygonEntity{
     private ArrayList<Point> points;
     private ArrayList<Line> lines;
 
-    public Polygon(ArrayList<Point> points, ArrayList<Line> lines) {
+    public Polygon(ArrayList<Point> points, Color borders, int bordersWidth, Color infill, ArrayList<Line> lines) {
+        super(borders, infill, bordersWidth);
         this.points = points;
         this.lines = lines;
     }
 
-    public  Polygon(ArrayList<Point> points) {
-        this.points = points;
-        this.lines = new ArrayList<>();
+    public Polygon(ArrayList<Point> points, Color borders, int bordersWidth, Color infill) {
+        this(points, borders, bordersWidth, infill, new ArrayList<>());
     }
 
-    public Polygon(Point startingPoint) {
-        this(new ArrayList<>(List.of(startingPoint)));
+    public Polygon(Point startingPoint, Color borders, int bordersWidth, Color infill) {
+        this(new ArrayList<>(List.of(startingPoint)), borders, bordersWidth, infill);
     }
 
     public Polygon(Polygon polygon) {
-        this(new ArrayList<>(polygon.getPoints()), new ArrayList<>(polygon.getLines()));
+        this(new ArrayList<>(polygon.getPoints()), polygon.getBordersColor(), polygon.getBordersWidth(), polygon.getInfillColor(), new ArrayList<>(polygon.getLines()));
     }
 
     public ArrayList<Point> getPoints() {
         return points;
+    }
+
+    @Override
+    public ArrayList<Point> getTransformationAffectedPoints(Point point) {
+        return new ArrayList<>(List.of(point));
     }
 
     public ArrayList<Line> getLines() { return lines; }
@@ -41,17 +46,16 @@ public class Polygon implements CanvasEntity{
         lines.removeLast();
     }
 
-    public void constructPoint(Point point, Color color, int width, int space, int step, boolean snapping){
+    public void constructPoint(Point point, int width, int space, int step, boolean snapping){
 
         if(!points.isEmpty())
         {
-            lines.add(new Line(points.getLast(), point, color,  width, space, step, snapping));
+            lines.add(new Line(points.getLast(), point, this.getBordersColor(),  width, space, step, snapping));
         }
 
         if(!point.equals(getPoints().getFirst())){
             points.add(point);
         }
-
 
     }
 
@@ -61,6 +65,7 @@ public class Polygon implements CanvasEntity{
         if(points.contains(point)){
             point.modifyPoint(point, x, y);
             for(Line line : lines){
+                // if the line contains the point, modify it.
                 line.modifyPoint(point, x, y);
             }
 
@@ -81,7 +86,26 @@ public class Polygon implements CanvasEntity{
     }
 
     @Override
-    public Point getClosestChild(Point point) {
+    public Point getClosestPoint(int x, int y) {
+
+        double minHypot = Double.MAX_VALUE;
+        Point closestPoint = null;
+
+        for(Point point : points){
+            int px = Math.abs(x - point.getX());
+            int py = Math.abs(y - point.getY());
+            double ph = Math.hypot(px, py);
+            if(Math.hypot(px, py) < minHypot){
+                closestPoint = point;
+                minHypot = ph;
+            }
+        }
+
+        return closestPoint;
+    }
+
+    @Override
+    public Point getClosestSibling(Point point) {
 
         if (points.size() < 2) return null;
 

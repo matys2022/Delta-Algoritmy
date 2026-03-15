@@ -1,10 +1,12 @@
 package factories;
 
+import models.CanvasEntities.Circle;
 import models.CanvasEntities.Line;
 import models.CanvasEntities.Point;
+import models.CanvasEntities.Rectangle;
 import models.WindowCanvasMap;
 
-import java.awt.*;
+import java.awt.Color;
 
 public class CanvasEntityFactory {
 
@@ -22,7 +24,7 @@ public class CanvasEntityFactory {
     }
 
     public Line createFinalLine(Line line) {
-        return createFinalLine(line.getPointA(), line.getPointB(), line.getColor(), line.getWidth(), line.getSpace(), line.getStep(), line.isSnapping());
+        return createFinalLine(line.getPointA(), line.getPointB(), line.getBordersColor(), line.getBordersWidth(), line.getSpace(), line.getStep(), line.isSnapping());
     }
 
     public Line createPreviewLine(models.CanvasEntities.Point pointA, models.CanvasEntities.Point pointB, Color color, int width, int space, int step, boolean snapping) {
@@ -30,15 +32,15 @@ public class CanvasEntityFactory {
     }
 
     public Line createPreviewLine(Line line) {
-        return createLine(line.getPointA(), line.getPointB(), line.getColor(), line.getWidth(), line.getSpace(), line.getStep(), line.isSnapping());
+        return createLine(line.getPointA(), line.getPointB(), line.getBordersColor(), line.getBordersWidth(), line.getSpace(), line.getStep(), line.isSnapping());
     }
 
-    private Line createLine(models.CanvasEntities.Point pointA, models.CanvasEntities.Point pointB, Color color, int width, int space, int step, boolean snapping){
-        return new Line(pointA, pointB, color, width, space, step, snapping);
+    private Line createLine(models.CanvasEntities.Point pointA, models.CanvasEntities.Point pointB, Color color,  int width, int space, int step, boolean snapping){
+        return new Line(pointA, pointB, color,  width, space, step, snapping);
     }
 
-    public models.CanvasEntities.Polygon createPolygon(models.CanvasEntities.Point startingPoint) {
-        models.CanvasEntities.Polygon polygon = new models.CanvasEntities.Polygon(startingPoint);
+    public models.CanvasEntities.Polygon createPolygon(models.CanvasEntities.Point startingPoint, Color borders, int bordersWidth, Color infill) {
+        models.CanvasEntities.Polygon polygon = new models.CanvasEntities.Polygon(startingPoint, borders, bordersWidth, infill);
 //        windowCanvasMap.addCanvasEntityPoint(startingPoint, polygon);
         return polygon;
     }
@@ -48,6 +50,19 @@ public class CanvasEntityFactory {
             windowCanvasMap.addCanvasEntityPoint(point, newPolygon);
         }
         return newPolygon;
+    }
+
+    public Rectangle createRectangle(Line hypotenuse, Color borders, int bordersWidth, Color infill) {
+        Rectangle rectangle = new Rectangle(hypotenuse, borders, bordersWidth, infill);
+        for(Point point : rectangle.getPoints()){
+            windowCanvasMap.addCanvasEntityPoint(point, rectangle);
+        }
+        return rectangle;
+    }
+
+    public Circle createCircle(Line hypotenuse,  Color borders, int bordersWidth, int step, int space, Color infill) {
+        Circle circle = new Circle(hypotenuse, borders, bordersWidth, step, space, infill);
+        return  circle;
     }
 
 }

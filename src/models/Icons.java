@@ -19,6 +19,12 @@ public class Icons{
     public String closeIcon = "Close.bin";
     public String cursorHollowIcon = "HollowCursor.bin";
     public String cursorFullIcon = "FilledCursor.bin";
+    public String bucketIcon = "Bucket.bin";
+    public String rectangleIcon = "Rectangle.bin";
+    public String circleIcon = "Circle.bin";
+    public String circleThinIcon = "CircleThin.bin";
+    public String rectangleThinIcon = "RectangleThin.bin";
+    public String eraserIcon = "Eraser.bin";
 
     private int[][] getIconBits(String fileName) throws  java.io.IOException{
 

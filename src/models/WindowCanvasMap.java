@@ -2,15 +2,13 @@ package models;
 
 import models.CanvasEntities.CanvasEntity;
 import models.CanvasEntities.Point;
-import models.InterfaceEntities.Element;
 
-import java.awt.*;
 import java.util.*;
 
 public class WindowCanvasMap {
     private final CanvasMapPair[][] baseMap;
 
-    private final Map<Long, Deque<CanvasEntity>> stackMap;
+    private final Map<Long, ArrayList<CanvasEntity>> stackMap;
 
     private final ArrayDeque<Long> availableIds = new ArrayDeque<Long>();
 
@@ -22,7 +20,7 @@ public class WindowCanvasMap {
     private long nextId = 0;
 
     public void addCanvasEntityPoint(int x, int y, CanvasEntity canvasEntity){
-        if(y > baseMap.length || x >  baseMap[0].length || y < 0 || x < 0){
+        if(y > baseMap.length - 1 || x >  baseMap[0].length - 1 || y < 0 || x < 0){
             return; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
         }
         CanvasMapPair canvasPoint = baseMap[y][x];
@@ -45,14 +43,14 @@ public class WindowCanvasMap {
             baseMap[y][x] = new CanvasMapPair(stackId, canvasPoint.getCanvasEntity());
 
             // Create the stack
-            Deque<CanvasEntity> stack = new ArrayDeque<>();
-            stack.push(canvasPoint.getCanvasEntity()); // Duplicated value, might be unnecessary
-            stack.push(canvasEntity);
+            ArrayList<CanvasEntity> stack = new ArrayList<>();
+            stack.add(canvasPoint.getCanvasEntity()); // Duplicated value, might be unnecessary
+            stack.add(canvasEntity);
             stackMap.put(stackId, stack);
 
         } else {
             // Stack already exists, just push the new entity
-            stackMap.get(stackId).push(canvasEntity);
+            stackMap.get(stackId).add(canvasEntity);
         }
     }
 
@@ -60,37 +58,46 @@ public class WindowCanvasMap {
         addCanvasEntityPoint(point.getX(),point.getY(), canvasEntity);
     }
 
-    public CanvasEntity popCanvasEntityPoint(int x, int y){
-        if(y > baseMap.length || x >  baseMap[0].length || y < 0 || x < 0){
-            return null; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
-        }
-        CanvasMapPair canvasPoint = baseMap[y][x];
+    public CanvasEntity removeCanvasEntityPoint(CanvasEntity entity, int x, int y){
+        try{
+            if(y > baseMap.length - 1 || x > baseMap[0].length - 1 || y < 0 || x < 0){
+                return null; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
+            }
+            CanvasMapPair canvasPoint = baseMap[y][x];
 
-        if(canvasPoint == null){
-            throw new NoSuchElementException("Element not found at: " + x + ", " + y);
-        }
+            if(canvasPoint == null){
+                throw new NoSuchElementException("Element not found at: " + x + ", " + y);
+            }
 
 
-        if(canvasPoint.getId() == -1){ // There is a single entity point, therefore no stack has been initialized
             CanvasEntity tmp = canvasPoint.getCanvasEntity();
-            canvasPoint.setCanvasEntity(null);
+
+            if(canvasPoint.getId() == -1){ // There is a single entity point, because no stack has been initialized
+                canvasPoint.setCanvasEntity(null);
+                return tmp;
+            }
+
+            ArrayList<CanvasEntity> canvasPointEntities = stackMap.get(canvasPoint.getId());
+            canvasPointEntities.remove(entity);
+
+            if(canvasPointEntities.size() == 1){ // Bring the last remaining point to the "Header" of the canvas pair and scrap the stack
+                CanvasEntity entityToBeMoved = canvasPointEntities.getFirst();
+                canvasPoint.setCanvasEntity(entityToBeMoved);
+                canvasPointEntities.removeFirst();
+                availableIds.push(canvasPoint.getId());
+
+                stackMap.remove(canvasPoint.getId());
+                canvasPoint.setId(-1);
+
+            }
+
             return tmp;
+
+        }catch(NoSuchElementException e){
+            System.err.println("Element not found at: " + x + ", " + y);
+            return null;
         }
 
-
-        CanvasEntity tmp = stackMap.get(canvasPoint.getId()).pop();
-
-        if(stackMap.get(canvasPoint.getId()).size() == 1){ // Bring the last remaining point to the "Header" of the canvas pair and scrap the stack
-
-            canvasPoint.setCanvasEntity(stackMap.get(canvasPoint.getId()).pop());
-            availableIds.push(canvasPoint.getId());
-
-            stackMap.remove(canvasPoint.getId());
-            canvasPoint.setId(-1);
-
-        }
-
-        return tmp;
     }
 
     public CanvasEntity peekCanvasEntityPoint(int x, int y){
@@ -108,7 +115,7 @@ public class WindowCanvasMap {
             return canvasPoint.getCanvasEntity();
         }
 
-        return stackMap.get(canvasPoint.getId()).peek(); // More than one canvas entity point exists for the requested coordinates
+        return stackMap.get(canvasPoint.getId()).getFirst(); // More than one canvas entity point exists for the requested coordinates
     }
 
 
