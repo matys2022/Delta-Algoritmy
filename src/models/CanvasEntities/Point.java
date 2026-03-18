@@ -3,21 +3,22 @@ package models.CanvasEntities;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class Point extends CanvasLine implements CanvasEntity{
+public class Point implements CanvasEntity{
 
     int x;
     int y;
 
-    public Point(int x, int y, int bordersWidth, Color color) {
-        super(color, bordersWidth);
+    public Point(int x, int y) {
+//        super(color, bordersWidth);
         this.x = x;
         this.y = y;
     }
 
-    public Point(int x, int y) {
-        this(x, y, 1, Color.RED);
-    }
+//    public Point(int x, int y) {
+//        this(x, y, 1, Color.RED);
+//    }
 
     public Point(Point p) {
         this(p.x, p.y);
@@ -75,4 +76,26 @@ public class Point extends CanvasLine implements CanvasEntity{
     public ArrayList<Point> getTransformationAffectedPoints(Point point) {
         return new ArrayList<>(List.of(point));
     }
+
+
+    public double CalculateHypotenuse(Point point){
+        double minHypot = Double.MAX_VALUE;
+        int ax = Math.abs(x - point.getX());
+        int ay = Math.abs(y - point.getY());
+
+        return Math.hypot(ax, ay);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Point p)) return false;
+        return x == p.x && y == p.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
+
 }

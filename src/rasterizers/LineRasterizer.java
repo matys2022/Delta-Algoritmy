@@ -6,6 +6,7 @@ import models.WindowCanvasMap;
 import rasters.Raster;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 public class LineRasterizer implements Rasterizer<Line> {
 
@@ -14,9 +15,10 @@ public class LineRasterizer implements Rasterizer<Line> {
     public LineRasterizer() {
     }
 
-    public void rasterize(Line line, Raster raster, WindowCanvasMap canvasMap) {
+    public ArrayList<Point> rasterize(Line line, Raster raster, WindowCanvasMap canvasMap) {
         Point a = new Point(line.getPointA());
         Point b = new Point(line.getPointB());
+        ArrayList<Point> visiblePoints = new ArrayList<>();
 
         canvasMap.addCanvasEntityPoint(a, line);
         canvasMap.addCanvasEntityPoint(b, line);
@@ -68,7 +70,7 @@ public class LineRasterizer implements Rasterizer<Line> {
                     // If the coordinates are outside the window, therefore the mouse gone out of the window.
                     if (y < raster.getHeight() && y > 0) {
                         raster.setPixel(x, y, line.getBordersColor().getRGB());
-
+                        visiblePoints.add(new Point(x, y));
                     }
                 }
 
@@ -103,12 +105,13 @@ public class LineRasterizer implements Rasterizer<Line> {
                     // If the coordinates are outside the window, therefore the mouse gone out of the window.
                     if (x < raster.getWidth() && x >= 0) {
                         raster.setPixel(x, y, line.getBordersColor().getRGB());
-                        canvasMap.addCanvasEntityPoint(x, y, line);
+                        visiblePoints.add(new Point(x, y));
                     }
 
                 }
             }
         }
 
+        return  visiblePoints;
     }
 }

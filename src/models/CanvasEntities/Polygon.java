@@ -2,16 +2,49 @@ package models.CanvasEntities;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Polygon extends CanvasShape implements CanvasEntity, PolygonEntity{
     private ArrayList<Point> points;
     private ArrayList<Line> lines;
+    ArrayList<Point> visiblePoints;
+
+//    @Override
+//    public boolean Fill(Point p) {
+//        this
+//    }
+
+    @Override
+    public boolean isPointInPolygon(Point p) {
+        boolean inside = false;
+
+        for (int i = 0, j = this.points.size() - 1; i < this.points.size(); j = i++) {
+            int xi = this.points.get(i).getX();
+            int yi = this.points.get(i).getY();
+            int xj = this.points.get(j).getX();
+            int yj = this.points.get(j).getY();
+
+            boolean intersect =
+                    ((yi > p.getY()) != (yj > p.getY())) &&
+                            (p.getX() < (xj - xi) * (p.getY() - yi) / (double)(yj - yi) + xi);
+
+            if (intersect)
+                inside = !inside;
+        }
+
+        return inside;
+    }
 
     public Polygon(ArrayList<Point> points, Color borders, int bordersWidth, Color infill, ArrayList<Line> lines) {
         super(borders, infill, bordersWidth);
-        this.points = points;
+        this.points = new ArrayList<>(List.of(points.getFirst()));
         this.lines = lines;
+        this.visiblePoints = new ArrayList<>();
+        for(Point p : points){
+            constructPoint(p, bordersWidth, 8, 0, false);
+        }
+        constructPoint(points.getFirst(), bordersWidth, 8, 0, false);
     }
 
     public Polygon(ArrayList<Point> points, Color borders, int bordersWidth, Color infill) {
@@ -24,6 +57,24 @@ public class Polygon extends CanvasShape implements CanvasEntity, PolygonEntity{
 
     public Polygon(Polygon polygon) {
         this(new ArrayList<>(polygon.getPoints()), polygon.getBordersColor(), polygon.getBordersWidth(), polygon.getInfillColor(), new ArrayList<>(polygon.getLines()));
+    }
+
+    @Override
+    public ArrayList<Point> getVisiblePoints() {
+        return visiblePoints;
+    }
+
+    @Override
+    public void clearVisiblePoints() {
+        visiblePoints.clear();
+    }
+
+    public void addVisiblePoint(Point point){
+        visiblePoints.add(point);
+    }
+
+    public void addVisiblePoints(Collection<Point> point){
+        visiblePoints.addAll(point);
     }
 
     public ArrayList<Point> getPoints() {
@@ -70,7 +121,15 @@ public class Polygon extends CanvasShape implements CanvasEntity, PolygonEntity{
             }
 
         }
+        visiblePoints = new ArrayList<>();
+    }
 
+
+    @Override
+    public void move(int diffX, int diffY) {
+        for(Point point : points){
+            point.modifyPoint(point, point.getX() + diffX, point.getY() + diffY);
+        }
     }
 
     @Override

@@ -2,7 +2,7 @@ package models.InterfaceEntities;
 
 import java.util.ArrayList;
 
-public class Root extends Element{
+public class Root extends ParentElement{
 
     public Root(int windowWidth, int windowHeight, BoundingDimensions padding, ColorSet colorSet, BoundingDimensions border){
         super(0, 0, padding, colorSet, border, new Coordinates(0, 0), null);
@@ -32,6 +32,11 @@ public class Root extends Element{
 //        super.setContent_width(this.getContent_width() + (!children.isEmpty() ? gap : 0) + element.getWidth());
         this.children.add(element);
 
+
+    }
+
+    @Override
+    public void refresh() {
 
     }
 

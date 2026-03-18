@@ -2,7 +2,7 @@ package models.CanvasEntities;
 
 import java.awt.*;
 
-public interface CanvasEntityArea {
+public interface CanvasEntityArea extends ComplexCanvasEntity {
     Color getInfillColor();
 
 }

@@ -1,12 +1,13 @@
 package models;
 
 import models.CanvasEntities.CanvasEntity;
+import models.CanvasEntities.ComplexCanvasEntity;
 
 public class CanvasMapPair {
     long id;
-    CanvasEntity canvasEntity;
+    ComplexCanvasEntity canvasEntity;
 
-    public CanvasMapPair(long id, CanvasEntity canvasEntity) {
+    public CanvasMapPair(long id, ComplexCanvasEntity canvasEntity) {
         this.id = id;
         this.canvasEntity = canvasEntity;
     }
@@ -14,11 +15,11 @@ public class CanvasMapPair {
     public long getId() {
         return id;
     }
-    public CanvasEntity getCanvasEntity() {
+    public ComplexCanvasEntity getCanvasEntity() {
         return canvasEntity;
     }
 
-    public void setCanvasEntity(CanvasEntity canvasEntity) {
+    public void setCanvasEntity(ComplexCanvasEntity canvasEntity) {
         this.canvasEntity = canvasEntity;
     }
 

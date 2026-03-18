@@ -1,25 +1,30 @@
 package models;
 
 import models.CanvasEntities.CanvasEntity;
+import models.CanvasEntities.ComplexCanvasEntity;
 import models.CanvasEntities.Point;
 
 import java.util.*;
 
 public class WindowCanvasMap {
     private final CanvasMapPair[][] baseMap;
+    private final int width;
+    private final int height;
 
-    private final Map<Long, ArrayList<CanvasEntity>> stackMap;
+    private final Map<Long, ArrayList<ComplexCanvasEntity>> stackMap;
 
     private final ArrayDeque<Long> availableIds = new ArrayDeque<Long>();
 
     public WindowCanvasMap(int width, int height){
+        this.width = width;
+        this.height = height;
         baseMap = new CanvasMapPair[height][width];
         stackMap = new HashMap<>();
     }
 
     private long nextId = 0;
 
-    public void addCanvasEntityPoint(int x, int y, CanvasEntity canvasEntity){
+    public void addCanvasEntityPoint(int x, int y, ComplexCanvasEntity canvasEntity){
         if(y > baseMap.length - 1 || x >  baseMap[0].length - 1 || y < 0 || x < 0){
             return; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
         }
@@ -43,7 +48,7 @@ public class WindowCanvasMap {
             baseMap[y][x] = new CanvasMapPair(stackId, canvasPoint.getCanvasEntity());
 
             // Create the stack
-            ArrayList<CanvasEntity> stack = new ArrayList<>();
+            ArrayList<ComplexCanvasEntity> stack = new ArrayList<>();
             stack.add(canvasPoint.getCanvasEntity()); // Duplicated value, might be unnecessary
             stack.add(canvasEntity);
             stackMap.put(stackId, stack);
@@ -54,12 +59,12 @@ public class WindowCanvasMap {
         }
     }
 
-    public void addCanvasEntityPoint(Point point, CanvasEntity canvasEntity) {
+    public void addCanvasEntityPoint(Point point, ComplexCanvasEntity canvasEntity) {
         addCanvasEntityPoint(point.getX(),point.getY(), canvasEntity);
     }
 
-    public CanvasEntity removeCanvasEntityPoint(CanvasEntity entity, int x, int y){
-        try{
+    public ComplexCanvasEntity removeCanvasEntityPoint(ComplexCanvasEntity entity, int x, int y){
+//        try{
             if(y > baseMap.length - 1 || x > baseMap[0].length - 1 || y < 0 || x < 0){
                 return null; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
             }
@@ -70,18 +75,18 @@ public class WindowCanvasMap {
             }
 
 
-            CanvasEntity tmp = canvasPoint.getCanvasEntity();
+            ComplexCanvasEntity tmp = canvasPoint.getCanvasEntity();
 
             if(canvasPoint.getId() == -1){ // There is a single entity point, because no stack has been initialized
                 canvasPoint.setCanvasEntity(null);
                 return tmp;
             }
 
-            ArrayList<CanvasEntity> canvasPointEntities = stackMap.get(canvasPoint.getId());
+            ArrayList<ComplexCanvasEntity> canvasPointEntities = stackMap.get(canvasPoint.getId());
             canvasPointEntities.remove(entity);
 
             if(canvasPointEntities.size() == 1){ // Bring the last remaining point to the "Header" of the canvas pair and scrap the stack
-                CanvasEntity entityToBeMoved = canvasPointEntities.getFirst();
+                ComplexCanvasEntity entityToBeMoved = canvasPointEntities.getFirst();
                 canvasPoint.setCanvasEntity(entityToBeMoved);
                 canvasPointEntities.removeFirst();
                 availableIds.push(canvasPoint.getId());
@@ -93,14 +98,29 @@ public class WindowCanvasMap {
 
             return tmp;
 
-        }catch(NoSuchElementException e){
-            System.err.println("Element not found at: " + x + ", " + y);
-            return null;
-        }
+//        }catch(NoSuchElementException e){
+//            System.err.println("Element not found at: " + x + ", " + y);
+//            return null;
+//        }
 
     }
 
-    public CanvasEntity peekCanvasEntityPoint(int x, int y){
+    public boolean hasEntity(int x, int y) {
+
+        if (x >= 0 && x < baseMap[0].length && y >= 0 && y < baseMap.length) { // Check window boundaries
+            return this.peekCanvasEntityPoint(x, y) instanceof ComplexCanvasEntity;
+        }
+        return false;
+    }
+
+    public boolean isWithinBounds(int x, int y){
+        return y < this.height && x <  width && y >= 0 && x >= 0;
+    }
+
+    public ComplexCanvasEntity peekCanvasEntityPoint(Point point){
+        return this.peekCanvasEntityPoint(point.getX(), point.getY());
+    }
+    public ComplexCanvasEntity peekCanvasEntityPoint(int x, int y){
         if(y > baseMap.length || x >  baseMap[0].length || y < 0 || x < 0){
             return null; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
         }
@@ -115,7 +135,7 @@ public class WindowCanvasMap {
             return canvasPoint.getCanvasEntity();
         }
 
-        return stackMap.get(canvasPoint.getId()).getFirst(); // More than one canvas entity point exists for the requested coordinates
+        return stackMap.get(canvasPoint.getId()).getLast(); // More than one canvas entity point exists for the requested coordinates
     }
 
 

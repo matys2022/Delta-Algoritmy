@@ -3,13 +3,14 @@ package models.CanvasEntities;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class Rectangle extends CanvasShape implements CanvasEntity, PolygonEntity{
 
     private Line[] lines;
     private Point[] points;
-
+    ArrayList<Point> visiblePoints;
 
     public Rectangle(Line line, Color bordersColor, int bordersWidth, Color infillColor) {
 
@@ -49,6 +50,8 @@ public class Rectangle extends CanvasShape implements CanvasEntity, PolygonEntit
         left.pointB = first;
 
         lines[3] = left;
+
+        this.visiblePoints = new ArrayList<>();
     }
 
     public int getWidth(){
@@ -105,9 +108,58 @@ public class Rectangle extends CanvasShape implements CanvasEntity, PolygonEntit
                     pointRef.setX(x);
                     pointRef.setY(y);
                 }
-
-
             }
+
+            visiblePoints = new ArrayList<>();
+        }
+    }
+
+    @Override
+    public ArrayList<Point> getVisiblePoints() {
+        return visiblePoints;
+    }
+
+    @Override
+    public void clearVisiblePoints() {
+        visiblePoints.clear();
+    }
+
+    @Override
+    public boolean isPointInPolygon(Point p) {
+        boolean inside = false;
+
+
+        for (int i = 0, j = this.points.length - 1; i < this.points.length; j = i++) {
+            int xi = this.points[i].getX();
+            int yi = this.points[i].getY();
+            int xj = this.points[j].getX();
+            int yj = this.points[j].getY();
+
+            boolean intersect =
+                    ((yi > p.getY()) != (yj > p.getY())) &&
+                            (p.getX() < (xj - xi) * (p.getY() - yi) / (double)(yj - yi) + xi);
+
+            if (intersect)
+                inside = !inside;
+        }
+
+        return inside;
+    }
+
+    @Override
+    public void addVisiblePoint(Point point){
+        visiblePoints.add(point);
+    }
+
+    @Override
+    public void addVisiblePoints(Collection<Point> point){
+        visiblePoints.addAll(point);
+    }
+
+    @Override
+    public void move(int diffX, int diffY) {
+        for(Point point : points){
+            point.modifyPoint(point, point.getX() + diffX, point.getY() + diffY);
         }
     }
 

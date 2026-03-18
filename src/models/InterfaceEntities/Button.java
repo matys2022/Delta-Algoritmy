@@ -32,9 +32,6 @@ public class Button extends ReactiveElement implements ActionElement {
     }
 
     private static int getMaxLength(int[][] matrix) {
-
-
-
         int max = 0;
         if (matrix == null) return 0;
 

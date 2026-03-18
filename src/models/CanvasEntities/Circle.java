@@ -4,15 +4,16 @@ import com.sun.source.tree.CaseTree;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 
-public class Circle extends CanvasShape implements CanvasEntity {
+public class Circle extends CanvasShape implements CanvasEntity, ComplexCanvasEntity {
 
     Point center;
     int radius;
     Point tmpCircumference;
     int step, space;
-
     ArrayList<Point> drawnPoints;
+    ArrayList<Point> visiblePoints;
 
     public Circle(Point center, Color borders, int bordersWidth, int step, int space, Color infill, int radius) {
 
@@ -23,6 +24,7 @@ public class Circle extends CanvasShape implements CanvasEntity {
         this.center = center;
         this.radius = radius;
         this.drawnPoints = null;
+        this.visiblePoints = new ArrayList<>();
     }
 
     public Circle(Line radius, Color borders, int bordersWidth, int step, int space, Color infill) {
@@ -57,6 +59,22 @@ public class Circle extends CanvasShape implements CanvasEntity {
         return new Point(x, y);
     }
 
+    public ArrayList<Point> getVisiblePoints() {
+        return visiblePoints;
+    }
+
+    public void addVisiblePoint(Point point){
+        visiblePoints.add(point);
+    }
+
+    public void addVisiblePoints(Collection<Point> point){
+        visiblePoints.addAll(point);
+    }
+
+    @Override
+    public void clearVisiblePoints() {
+        visiblePoints.clear();
+    }
 
     public Point getCenter() {
         return center;
@@ -77,6 +95,7 @@ public class Circle extends CanvasShape implements CanvasEntity {
         }
         this.drawnPoints = null;
 //        this.drawnPoints.add(point);
+        visiblePoints = new ArrayList<>();
     }
 
     @Override
@@ -87,7 +106,7 @@ public class Circle extends CanvasShape implements CanvasEntity {
 
         Point p = new Point(x,y);
 
-        if(Math.abs(calculateHypotenuse(center, p) - radius) <= 1) {
+        if(Math.abs(calculateHypotenuse(center, p) - radius) <= this.getBordersWidth()) {
             tmpCircumference = new Point(p);
             return tmpCircumference;
         }
@@ -99,12 +118,18 @@ public class Circle extends CanvasShape implements CanvasEntity {
     public Point getClosestPoint(int x, int y) {
         Point p = new Point(x,y);
 
-        if(Math.abs(calculateHypotenuse(center, p) - radius) <= 1) {
+        if(Math.abs(calculateHypotenuse(center, p) - radius) <= this.getBordersWidth()) {
             tmpCircumference = new Point(p);
             return tmpCircumference;
         }
 
         return center;
+    }
+
+    @Override
+    public void move(int diffX, int diffY) {
+        center.modifyPoint(center, center.getX() + diffX, center.getY() + diffY);
+        visiblePoints = new ArrayList<>();
     }
 
     @Override
@@ -130,6 +155,10 @@ public class Circle extends CanvasShape implements CanvasEntity {
             this.drawnPoints = calculatePoints();
         }
         return drawnPoints;
+    }
+
+    public boolean isPointInCircle(Point point){
+        return center.CalculateHypotenuse(point) <= this.radius;
     }
 
     public int getStep() {

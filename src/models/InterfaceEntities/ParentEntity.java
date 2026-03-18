@@ -1,5 +1,5 @@
 package models.InterfaceEntities;
 
-public interface NestableEntity {
+public interface ParentEntity {
     public void refresh();
 }

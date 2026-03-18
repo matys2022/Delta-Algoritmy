@@ -17,7 +17,7 @@ public abstract class Element {
     protected BoundingDimensions border;
     protected ArrayList<Element> children;
     private BoundingDimensions padding;
-    private Element parent;
+    private ParentElement parent;
 
     public Element(int content_width, int content_height, BoundingDimensions padding, ColorSet colorSet, BoundingDimensions border, Coordinates coordinates, Element parent) {
 
@@ -156,6 +156,7 @@ public abstract class Element {
 
     public void setCoordinates(int x, int y){
         this.coordinates = new Coordinates(x, y);
+        System.out.println("set coordinates : " + this.getClass().getSimpleName() + " x/y" + x + " : " + y);
     }
 
     public void setCoordinates(Coordinates coordinates){
@@ -186,11 +187,11 @@ public abstract class Element {
         return padding.getBOTTOM();
     }
 
-    public Element getParent() {
+    public ParentElement getParent() {
         return parent;
     }
 
-    public void setParent(Element parent) {
+    public void setParent(ParentElement parent) {
         this.parent = parent;
     }
 

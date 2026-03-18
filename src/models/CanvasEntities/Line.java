@@ -2,13 +2,15 @@ package models.CanvasEntities;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class Line extends CanvasLine implements CanvasEntity{
+public class Line extends CanvasLine implements CanvasEntity, ComplexCanvasEntity{
 
     Point pointA, pointB;
     int step, space;
     boolean snapping;
+    ArrayList<Point> visiblePoints;
 
 
     public Line(Point pointA, Point pointB, Color lineColor, int bordersWidth, int space, int step, boolean snapping) {
@@ -18,12 +20,32 @@ public class Line extends CanvasLine implements CanvasEntity{
         this.space = space;
         this.step = step;
         this.snapping = snapping;
+        this.visiblePoints = new ArrayList<>();
     }
 
     public Line(Line line){
         this(line.getPointA(), line.getPointB(), line.getBordersColor(), line.getBordersWidth(), line.space, line.step, line.snapping);
     }
 
+    @Override
+    public ArrayList<Point> getVisiblePoints() {
+        return visiblePoints;
+    }
+
+    @Override
+    public void addVisiblePoint(Point point){
+        visiblePoints.add(point);
+    }
+
+    @Override
+    public void addVisiblePoints(Collection<Point> point){
+        visiblePoints.addAll(point);
+    }
+
+    @Override
+    public void clearVisiblePoints() {
+        visiblePoints.clear();
+    }
 
     public boolean isSnapping() {
         return snapping;
@@ -73,6 +95,13 @@ public class Line extends CanvasLine implements CanvasEntity{
         }else if(pointB.equals(point)){
             pointB.modifyPoint(point, x, y);
         }
+        visiblePoints = new ArrayList<>();
+    }
+
+    @Override
+    public void move(int diffX, int diffY) {
+        pointA.modifyPoint(pointA, pointA.getX() + diffX, pointA.getY() + diffY);
+        pointB.modifyPoint(pointB, pointB.getX() + diffX, pointB.getY() + diffY);
     }
 
     @Override
@@ -93,7 +122,8 @@ public class Line extends CanvasLine implements CanvasEntity{
         int by = Math.abs(y - pointB.getY());
         int ax = Math.abs(x - pointA.getX());
         int ay = Math.abs(y - pointA.getY());
-        if(Math.hypot(ax, ay) < Math.hypot(bx, by)){
+        Point p = new Point(x, y);
+        if(pointA.CalculateHypotenuse(p) < pointB.CalculateHypotenuse(p)){
             return pointA;
         }else{
             return pointB;

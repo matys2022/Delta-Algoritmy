@@ -36,6 +36,9 @@ public class BitmapElement extends Element {
     public Bitmap getBitmap() {
         return bitmap;
     }
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
 
     public Color getFOREGROUND() {
         return colorSet.getFOREGROUND();

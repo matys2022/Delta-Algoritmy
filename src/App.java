@@ -20,6 +20,11 @@ import java.awt.event.MouseEvent;
 import java.io.Serial;
 import java.util.ArrayList;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class App {
@@ -42,7 +47,7 @@ public class App {
     private final CanvasEntityFactory entityFactory;
     private final WindowCanvasMap canvasMap;
 //
-    private final ArrayList<CanvasEntity> canvasEntities;
+    private final ArrayList<ComplexCanvasEntity> canvasEntities;
 
     // ────────────────────────────────────────────────
     //  UI Structure
@@ -50,6 +55,9 @@ public class App {
     private Root rootElement;
     private MenuBar modeBar;
     private MenuBar toolBar;
+
+    private WidthSelector widthSelector;
+    private ColorSelector colorSelector;
 
     // ────────────────────────────────────────────────
     //  State – Drawing & Editing
@@ -65,14 +73,15 @@ public class App {
 
     // Dragging / editing state
     private Point draggedPoint;
+    private Point previousRelativePoint;
     private Point originPoint;
-    private CanvasEntity draggedEntity;
+    private ComplexCanvasEntity draggedEntity;
 
     // Modifiers
     private boolean isCtrlPressed;
     private boolean isShiftPressed;
     private Color selectedColor = Color.RED;
-    private int selectedWidth = 2;
+    private int selectedWidth = 1;
 
     // Line appearance defaults
 //    private final int lineWidth = 8;
@@ -91,22 +100,37 @@ public class App {
         canvasRasterizer.clearRenderRaster();
         DrawInterface();
 
-        for(CanvasEntity canvasEntity : canvasEntities){
-            canvasRasterizer.rasterize(canvasEntity, false);
+        for(ComplexCanvasEntity canvasEntity : canvasEntities){
+            canvasRasterizer.rasterizeOutline(canvasEntity, false);
+            canvasRasterizer.rasterizeInfill(canvasEntity, false);
         };
+
+
 
         mainPanel.repaint();
     }
 
-    public void transferIntoPreviewLayer(CanvasEntity canvasEntity){
+    public void transferIntoPreviewLayer(ComplexCanvasEntity canvasEntity){
         canvasEntities.remove(canvasEntity);
+        for (Point point : canvasEntity.getVisiblePoints()) {
+            canvasMap.removeCanvasEntityPoint(canvasEntity, point.getX(), point.getY());
+        }
+
         refreshRenderCanvas();
-        canvasRasterizer.rasterize(canvasEntity, true);
+        canvasRasterizer.rasterizeOutline(canvasEntity, true);
     }
 
-    public void transferIntoRenderLayer(CanvasEntity canvasEntity){
+    public void transferIntoRenderLayer(ComplexCanvasEntity canvasEntity){
         canvasEntities.add(canvasEntity);
-        canvasRasterizer.rasterize(canvasEntity, false);
+        canvasRasterizer.rasterizeOutline(canvasEntity, false);
+    }
+
+    public void registerRenderCanvasEntity(ComplexCanvasEntity canvasEntity){
+        transferIntoRenderLayer(canvasEntity);
+
+        for (Point point : canvasEntity.getVisiblePoints()) {
+            canvasMap.addCanvasEntityPoint(point.getX(), point.getY(), canvasEntity);
+        }
     }
 
     public void present(Graphics graphics, Raster mesh) {
@@ -257,14 +281,24 @@ public class App {
         Button confirm = new Button(icons.getIconData(icons.tickIcon), polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0));
         Button cancel = new Button(icons.getIconData(icons.closeIcon), polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0));
         Button lineBtn = new Button(icons.getIconData(icons.lineIcon), polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0));
-        Button rectangleBtn = new Button(icons.getIconData(icons.rectangleThinIcon), polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0));
-        Button circleBtn = new Button(icons.getIconData(icons.circleThinIcon), polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0));
+        Button rectangleBtn = new Button(icons.getIconData(icons.rectangleIcon), polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0));
+        Button circleBtn = new Button(icons.getIconData(icons.circleIcon), polygonBtnPadding, polygonBtnColors, polygonBtnHoverColors, polygonBtnBorders, new Coordinates(0, 0));
         Button normalTool = new Button(icons.getIconData(icons.cursorFullIcon), new BoundingDimensions(2), polygonBtnColors, polygonBtnHoverColors, new BoundingDimensions(1),  new Coordinates(0, 0));
         Button vertexTool = new Button(icons.getIconData(icons.cursorHollowIcon), new BoundingDimensions(2), polygonBtnColors, polygonBtnHoverColors, new BoundingDimensions(1),  new Coordinates(0, 0));
         Button bucketTool = new Button(icons.getIconData(icons.bucketIcon), new BoundingDimensions(2), polygonBtnColors, polygonBtnHoverColors, new BoundingDimensions(1),  new Coordinates(0, 0));
         Button eraserTool = new Button(icons.getIconData(icons.eraserIcon), new BoundingDimensions(2), polygonBtnColors, polygonBtnHoverColors, new BoundingDimensions(1),  new Coordinates(0, 0));
+        Button handTool = new Button(icons.getIconData(icons.handIcon), new BoundingDimensions(2), polygonBtnColors, polygonBtnHoverColors, new BoundingDimensions(1),  new Coordinates(0, 0));
 
+        this.widthSelector = new WidthSelector(new BoundingDimensions(0), polygonBtnColors, modeBar);
 
+        BiConsumer<ReactiveElement, Color> colorChangeAction = (ReactiveElement element, Color color)->{
+            selectedColor = color;
+            radio(element, true);
+            System.out.println("Color change : " +  color.getClass().getName());
+            refreshRenderCanvas();
+        };
+
+        this.colorSelector = new ColorSelector(polygonBtnPadding, polygonBtnColors, colorChangeAction, Color.RED, modeBar);
 
 
         Consumer<Element> lineBtnAction = (Element button) ->{
@@ -308,6 +342,10 @@ public class App {
             modeBar.addElement(polygonBtn);
             modeBar.addElement(circleBtn);
             modeBar.addElement(rectangleBtn);
+
+            modeBar.addElement(widthSelector);
+            modeBar.addElement(colorSelector);
+
             drawingMode = DrawingMode.None;
             DrawInterface();
             DrawCanvas();
@@ -405,12 +443,92 @@ public class App {
             DrawCanvas();
         };
 
+        Consumer<Element> handToolAction = (Element button) ->{
+            buttonSwitchEditMode(button, EditMode.Move, true);
+            // Not functional, just to switch the color state.
+            // Can be deleted, when a None state will be added to the EditMode status options
+            if(editMode == EditMode.Normal) {
+                normalTool.toggleColorState();
+            }
+
+            // You can't use eraser tool with any drawing mode.
+            modeBar.disableAll();
+            drawingMode = DrawingMode.None;
+            cancelPolygonDrawing.accept(button);
+
+            DrawCanvas();
+        };
+
+
+        BitmapLabel label = new BitmapLabel(getWidthBitmap(polygonBtnColors.getFOREGROUND()), new BoundingDimensions(0), polygonBtnColors, new BoundingDimensions(0), new Coordinates(0, 0), widthSelector);
+
+
+        Consumer<Element> increaseAction = (Element button) -> {
+            if(selectedWidth >= 20)
+                return;
+
+            selectedWidth++;
+            System.out.println("increase : " +  selectedWidth);
+
+
+            label.UpdateBitmap(getWidthBitmap(label.getBitmap().getContentColor()));
+            refreshRenderCanvas();
+        };
+
+        Consumer<Element> decreaseAction = (Element button) -> {
+            if(selectedWidth <= 1)
+                return;
+
+            selectedWidth--;
+            System.out.println("decrease : " +  selectedWidth);
+            label.UpdateBitmap(getWidthBitmap(label.getBitmap().getContentColor()));
+            refreshRenderCanvas();
+        };
+
+
+
+
+
+        Button increase = new Button(icons.getIconData(icons.arrowUpIcon), new BoundingDimensions(0), polygonBtnColors, polygonBtnColors, new BoundingDimensions(1), new Coordinates(0, 0), widthSelector);
+        Button decrease = new Button(icons.getIconData(icons.arrowDownIcon), new BoundingDimensions(0), polygonBtnColors, polygonBtnColors, new BoundingDimensions(1), new Coordinates(0, 0), widthSelector);
+
+
+
+
+        increase.setButtonConsumer(increaseAction);
+        decrease.setButtonConsumer(decreaseAction);
+
+
+
 
 
         modeBar.addElement(lineBtn);
         modeBar.addElement(polygonBtn);
         modeBar.addElement(circleBtn);
         modeBar.addElement(rectangleBtn);
+
+        modeBar.addElement(widthSelector);
+        widthSelector.addElement(increase);
+        widthSelector.addElement(label);
+        widthSelector.addElement(decrease);
+
+        modeBar.addElement(colorSelector);
+        colorSelector.addColor(Color.ORANGE);
+        colorSelector.addColor(Color.MAGENTA);
+        colorSelector.addColor(Color.GREEN);
+        colorSelector.addColor(Color.GRAY);
+        colorSelector.addColor(Color.CYAN);
+        colorSelector.addColor(Color.ORANGE);
+        colorSelector.addColor(Color.DARK_GRAY);
+        colorSelector.addColor(Color.PINK);
+        colorSelector.addColor(Color.YELLOW);
+        colorSelector.addColor(Color.WHITE);
+        colorSelector.addColor(Color.RED);
+        colorSelector.addColor(Color.BLUE);
+
+
+
+
         rootElement.addElement(modeBar);
 
         rootElement.addElement(toolBar);
@@ -418,6 +536,7 @@ public class App {
         toolBar.addElement(vertexTool);
         toolBar.addElement(bucketTool);
         toolBar.addElement(eraserTool);
+        toolBar.addElement(handTool);
 
         polygonBtn.setButtonConsumer(polygonBtnAction);
         confirm.setButtonConsumer(confirmButtonAction);
@@ -431,6 +550,7 @@ public class App {
         vertexTool.setButtonConsumer(vertexToolAction);
         bucketTool.setButtonConsumer(bucketToolAction);
         eraserTool.setButtonConsumer(eraserToolAction);
+        handTool.setButtonConsumer(handToolAction);
 
         buttonSwitchEditMode(normalTool, EditMode.Normal, true);
 
@@ -439,6 +559,20 @@ public class App {
         DrawInterface();
 //        DrawCanvas();
     }
+
+    private Bitmap getWidthBitmap(Color color){
+        ArrayList<Bitmap> digits = Bitmap.ConvertInt(selectedWidth, color);
+        Bitmap mergedBitmap = null;
+        for(Bitmap digit : digits) {
+            if(mergedBitmap == null){
+                mergedBitmap = digit;
+                continue;
+            }
+            mergedBitmap = Bitmap.MergeBitmaps(mergedBitmap, digit, color, 1);
+        }
+        return  mergedBitmap;
+    }
+
 
     // Designed basically just to turn all currently active siblings off, except for the initializer,
     // whose state wil be negated, and optionally activate the initializer
@@ -489,7 +623,7 @@ public class App {
         System.out.println("Running on edit mode switch");
         if(editMode == EditMode.Vertex && draggedEntity != null && draggedPoint != null && originPoint != null) {
             draggedEntity.modifyPoint(draggedPoint, originPoint.getX(), originPoint.getY());
-            transferIntoRenderLayer(draggedEntity);
+            registerRenderCanvasEntity(draggedEntity);
             canvasRasterizer.clearPreviewRaster();
             previewOverlayPanel.repaint();
             originPoint = null;
@@ -596,21 +730,6 @@ public class App {
         return new Line(a, b, Color.cyan, selectedWidth, getLineSpace(), lineStep, hasSnapping);
     }
 
-
-
-//    public void refreshPreviewLine(){
-//
-//        if (pointA != null && tempPointB != null) {
-//            Line line = previewLine(pointA, tempPointB, true);
-//            canvasRasterizer.clearPreviewRaster();
-//            canvasRasterizer.rasterize(line, true);
-//            previewOverlayPanel.repaint();
-//
-//        }
-//        DrawCanvas();
-//
-//    }
-
     private void showPreviewLayer() {
         previewOverlayPanel.setVisible(true);
         previewOverlayPanel.requestFocusInWindow();
@@ -627,6 +746,53 @@ public class App {
             redrawPreviewCanvas();
             showPreviewLayer();
         }
+    }
+
+    private ArrayList<Point> findSurroundingPoints(Point coordinates, ArrayList<Point> parents){
+
+        ArrayList<Point> unregisteredNeighbours = new ArrayList<>();
+
+        int x = coordinates.getX()-1;
+        int y = coordinates.getY()-1;
+        for(int i = 0; i < 3; i++){
+            for(int j = 0; j < 3; j++){
+                int currentY = y + j;
+                int currentX = x + i;
+                if(i == 1 && j == 1){
+                    continue;
+                }
+
+
+                if(parents!=null&&parents.stream().anyMatch((Point parentPoint) ->
+                    parentPoint.getY() == currentY && parentPoint.getX() == currentX
+                )){
+                    continue;
+                }
+
+                if(canvasMap.peekCanvasEntityPoint(currentX,currentY) != null){
+                    continue;
+                }
+
+                unregisteredNeighbours.add(new Point(currentX, currentY));
+
+            }
+        }
+
+        ArrayList<Point> neighbours = new ArrayList<>();
+
+        for(Point parentPoint : unregisteredNeighbours){
+            neighbours.addAll(findSurroundingPoints(parentPoint, unregisteredNeighbours));
+        }
+
+        return neighbours;
+
+    }
+
+
+
+
+    private ArrayList<Point> findSurroundingPoints(Point coordinates){
+        return findSurroundingPoints(coordinates, null);
     }
 
     private void createInputListeners() {
@@ -711,10 +877,8 @@ public class App {
     }
 
     private void handleMouseMove(MouseEvent e) {
-//        showPreviewLayer();
         tempPointB = ShiftSnapPoint(pointA, new Point(e.getX(), e.getY()));
         redrawPreviewCanvas();
-//        DrawCanvas();
     }
 
     private void handleMouseDrag(MouseEvent e) {
@@ -789,25 +953,45 @@ public class App {
         mainPanel.repaint();
     }
 
-    private boolean hasEntity(int x, int y) {
 
-        if (x >= 0 && x < windowWidth && y >= 0 && y < windowHeight) { // Check window boundaries
-            CanvasEntity entity = canvasMap.peekCanvasEntityPoint(x, y);
-            return entity != null;
-        }
-        return false;
+
+    private void setModifiedEntity(int x, int y){
+        ComplexCanvasEntity foundEntity = canvasMap.peekCanvasEntityPoint(x, y);
+        this.draggedPoint = foundEntity.getClosestPoint(x, y);
+        this.draggedEntity = foundEntity;
+        originPoint = new Point(draggedPoint);
+        pointA = foundEntity.getClosestSibling(draggedPoint);
     }
 
-    private void setEntity(int x, int y){
-        CanvasEntity entity = canvasMap.peekCanvasEntityPoint(x, y);
-        this.draggedPoint = entity.getClosestPoint(x, y);
-        this.draggedEntity = entity;
-        originPoint = new Point(draggedPoint);
-        pointA = entity.getClosestSibling(draggedPoint);
+    private void setMovedEntity(int x, int y){
+        this.draggedEntity = canvasMap.peekCanvasEntityPoint(x, y);
+        this.originPoint = new Point(x, y);
+        System.out.println("New entity set");
+        System.out.println(this.originPoint == null);
+    }
 
-        for (Point point : entity.getTransformationAffectedPoints(draggedPoint)) {
-            canvasMap.removeCanvasEntityPoint(entity, point.getX(), point.getY());
+    private boolean isBoundary(Point p){
+        if (canvasMap.hasEntity(p.getX(), p.getY())) {
+            return false;
         }
+
+        int[][] neighbours = {{1,0}, {0,1}, {-1,0}, {0,-1}};
+
+        for (int[] n : neighbours) {
+            int nx = p.getX() + n[0];
+            int ny = p.getY() + n[1];
+
+            if (!canvasMap.isWithinBounds(nx, ny) || isFilled(nx, ny)) {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+    private boolean isFilled(int x, int y) {
+        return canvasMap.peekCanvasEntityPoint(x, y) != null;
     }
 
     public void DrawCanvas() {
@@ -818,7 +1002,92 @@ public class App {
         switch(drawingMode) {
             case None: {
                     switch(editMode) {
-                        case Normal: {
+                        case Move: {
+
+                            if(draggedEntity != null && pointA == null) {
+                                draggedEntity = null;
+                                System.out.println("Clear entity");
+                            }
+//
+                            if(draggedEntity == null && pointA != null) { // Set dragged point
+
+                                int centerX = pointA.getX();
+                                int centerY = pointA.getY();
+
+                                int maxRadius = 15;
+
+                                if (canvasMap.peekCanvasEntityPoint(centerX, centerY) != null) {
+//                                    this.draggedEntity = canvasMap.peekCanvasEntityPoint(centerX, centerY);
+                                    setMovedEntity(centerX, centerY);
+                                }
+
+                                // Spiral through the defined bounds
+                                for (int r = 1; r <= maxRadius && draggedEntity == null; r++) {
+                                    for (int x = centerX - r; x <= centerX + r; x++) {
+                                        if (canvasMap.hasEntity(x, centerY - r)) {setMovedEntity(x, centerY - r); break;} // Top edge
+                                        if (canvasMap.hasEntity(x, centerY + r)) {setMovedEntity(x, centerY + r);  break;} // Bottom edge
+                                    }
+                                    if (draggedEntity != null) break;
+
+                                    for (int y = centerY - r + 1; y <= centerY + r - 1; y++) {
+                                        if (canvasMap.hasEntity(centerX - r, y)) {setMovedEntity(centerX - r, y);  break;} // Left edge
+                                        if (canvasMap.hasEntity(centerX + r, y)) {setMovedEntity(centerX + r, y);  break;} // Right edge
+                                    }
+                                }
+
+                                if(draggedEntity != null) {
+                                    System.out.println("Got an entity : " + draggedEntity.getClass().getSimpleName());
+                                    transferIntoPreviewLayer(draggedEntity);
+
+                                }else{
+                                    pointA = null;
+                                    System.out.println("No entity found : NULL");
+                                }
+
+                                refreshRenderCanvas();
+
+                            }
+
+
+                            if(originPoint != null && draggedEntity != null){
+                                int px = 0;
+                                int py = 0;
+                                Point tmpPoint = new Point(tempPointB.getX() - originPoint.getX(), tempPointB.getY() - originPoint.getY());
+                                if(previousRelativePoint != null) {
+                                    px = previousRelativePoint.getX();
+                                    py = previousRelativePoint.getY();
+                                }
+
+                                System.out.println((tempPointB.getX() - originPoint.getX()) + " " + (tempPointB.getY() - originPoint.getY()));
+                                this.previousRelativePoint = new Point(tmpPoint);
+
+
+                                // Vertex transformation ended
+                                if(pointB != null) {
+
+                                    this.draggedEntity.move(tmpPoint.getX() - px, tmpPoint.getY() - py);
+                                    registerRenderCanvasEntity(draggedEntity);
+                                    refreshRenderCanvas();
+                                    this.draggedEntity = null;
+                                    this.previousRelativePoint = null;
+                                    originPoint = null;
+
+                                    break;
+                                }
+
+                                // Mouse moved
+                                if (tempPointB != null) {
+                                    this.draggedEntity.move(tmpPoint.getX() - px, tmpPoint.getY() - py);
+                                    System.out.println((tempPointB.getX() - originPoint.getX()) + " " + (tempPointB.getY() - originPoint.getY()));
+                                    canvasRasterizer.clearPreviewRaster();
+                                    canvasRasterizer.rasterizeOutline(draggedEntity, true);
+                                    this.previousRelativePoint = new Point(tmpPoint);
+                                    previewOverlayPanel.repaint();
+                                }
+
+
+
+                            }
 
 
 
@@ -837,26 +1106,30 @@ public class App {
                                 int maxRadius = 15;
 
                                 if (canvasMap.peekCanvasEntityPoint(centerX, centerY) != null) {
-                                    draggedPoint = new Point(centerX, centerY);
+                                    setModifiedEntity(centerX, centerY);
                                 }
 
 
                                 // Spiral through the defined bounds
                                 for (int r = 1; r <= maxRadius && draggedPoint == null; r++) {
                                     for (int x = centerX - r; x <= centerX + r; x++) {
-                                        if (hasEntity(x, centerY - r)) {setEntity(x, centerY - r); break;} // Top edge
-                                        if (hasEntity(x, centerY + r)) {setEntity(x, centerY + r); break;} // Bottom edge
+                                        if (canvasMap.hasEntity(x, centerY - r)) {
+                                            setModifiedEntity(x, centerY - r); break;} // Top edge
+                                        if (canvasMap.hasEntity(x, centerY + r)) {
+                                            setModifiedEntity(x, centerY + r); break;} // Bottom edge
                                     }
                                     if (draggedPoint != null) break;
 
                                     for (int y = centerY - r + 1; y <= centerY + r - 1; y++) {
-                                        if (hasEntity(centerX - r, y)) {setEntity(centerX - r, y); break;} // Left edge
-                                        if (hasEntity(centerX + r, y)) {setEntity(centerX + r, y); break;} // Right edge
+                                        if (canvasMap.hasEntity(centerX - r, y)) {
+                                            setModifiedEntity(centerX - r, y); break;} // Left edge
+                                        if (canvasMap.hasEntity(centerX + r, y)) {
+                                            setModifiedEntity(centerX + r, y); break;} // Right edge
                                     }
                                 }
 
                                 if(draggedPoint != null) {
-                                    System.out.println("Got a point : X(" + draggedPoint.getX() + "), Y(" + draggedPoint.getY() + ")");
+                                    System.out.println("Got a point : X(" + draggedPoint.getX() + "), Y(" + draggedPoint.getY() + "): " + draggedEntity.toString());
                                     transferIntoPreviewLayer(draggedEntity);
 
 
@@ -872,15 +1145,9 @@ public class App {
                             // Vertex transformation ended
                             if(draggedPoint != null && pointB != null && originPoint != null && draggedEntity != null) {
 
-                                for (Point point : draggedEntity.getTransformationAffectedPoints(draggedPoint))
-                                {
-                                    canvasMap.addCanvasEntityPoint(point, draggedEntity);
-                                }
-//                                canvasMap.popCanvasEntityPoint(originPoint.getX(), originPoint.getY());
-//                                canvasMap.addCanvasEntityPoint(pointB, draggedEntity);
                                 this.draggedPoint = null;
                                 this.originPoint = null;
-                                transferIntoRenderLayer(draggedEntity);
+                                registerRenderCanvasEntity(draggedEntity);
                                 refreshRenderCanvas();
                                 this.draggedEntity = null;
 
@@ -891,7 +1158,7 @@ public class App {
                             if (tempPointB != null && draggedPoint != null && draggedEntity != null) { //
                                 draggedEntity.modifyPoint(draggedPoint, tempPointB.getX(), tempPointB.getY());
                                 canvasRasterizer.clearPreviewRaster();
-                                canvasRasterizer.rasterize(draggedEntity, true);
+                                canvasRasterizer.rasterizeOutline(draggedEntity, true);
 
                                 previewOverlayPanel.repaint();
                             }
@@ -899,10 +1166,81 @@ public class App {
 
                         }break;
                         case Bucket: {
-                            if(draggedPoint != null && pointA == null) {}
+                            if (pointA != null) {
+                                // Find valid boundary start
+                                Point start = new Point(pointA);
+                                Set<ComplexCanvasEntity> surroundingEntities = new HashSet<>();
+                                Set<Point> visited = new HashSet<>();
+                                Queue<Point> queue = new LinkedList<>();
+
+                                int[][] dirs = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+
+                                queue.add(pointA);
+                                visited.add(pointA);
+
+                                while (!queue.isEmpty()) {
+                                    Point current = queue.poll();
+
+                                    for (int[] d : dirs) {
+                                        int nx = current.getX() + d[0];
+                                        int ny = current.getY() + d[1];
+
+                                        if (!canvasMap.isWithinBounds(nx, ny)) continue;
+
+                                        Point next = new Point(nx, ny);
+
+                                        // If it's a filled pixel → collect entity
+                                        if (canvasMap.hasEntity(nx, ny)) {
+                                            ComplexCanvasEntity entity = canvasMap.peekCanvasEntityPoint(nx, ny);
+                                            if (entity != null) {
+                                                surroundingEntities.add(entity);
+                                            }
+                                            continue;
+                                        }
+
+                                        // Otherwise continue flood fill
+                                        if (!visited.contains(next)) {
+                                            visited.add(next);
+                                            queue.add(next);
+                                        }
+                                    }
+                                }
+
+
+                                for(ComplexCanvasEntity entity : surroundingEntities) {
+                                    if(entity instanceof PolygonEntity plgEntity && entity instanceof CanvasShape shp){
+                                        if(plgEntity.isPointInPolygon(pointA)){
+                                            shp.setHasFill(true);
+                                            Point plg = shp.getClosestPoint(pointA.getX(), pointA.getY());
+                                            shp.addFillPoint(plg);
+                                        }
+                                    }
+                                    if(entity instanceof  Circle crl){
+                                        if(crl.isPointInCircle(pointA)){
+                                            crl.setHasFill(true);
+                                            Point cls = crl.getClosestPoint(pointA.getX(), pointA.getY());
+                                            crl.addFillPoint(cls);
+                                        }
+                                    }
+                                }
+
+                                refreshRenderCanvas();
+
+                            }
+
+
+
                         } break;
                         case Eraser: {
-                            if(draggedPoint != null && pointA != null) {}
+                            if (pointA != null) {
+                                Point tmpPoint = new Point(pointA);
+                                pointA = null;
+                                CanvasEntity foundEntity = canvasMap.peekCanvasEntityPoint(tmpPoint.getX(), tmpPoint.getY());
+                                if (foundEntity != null) {
+                                    canvasEntities.remove(foundEntity);
+                                }
+
+                            }
                         }
 
                     }
@@ -915,7 +1253,7 @@ public class App {
                     System.out.println(line.getBordersWidth());
                     line = SnapLine(line);
                     System.out.println(line.getBordersWidth());
-                    canvasRasterizer.rasterize(line, true);
+                    canvasRasterizer.rasterizeOutline(line, true);
                 }
 
 
@@ -925,9 +1263,10 @@ public class App {
 
                     frame.add(mainPanel, BorderLayout.CENTER);
 
-                    line = entityFactory.createFinalLine(SnapLine(finalLine(pointA, pointB, true)));
+                    line = SnapLine(finalLine(pointA, pointB, true));
 
-                    transferIntoRenderLayer(line);
+
+                    registerRenderCanvasEntity(line);
                     canvasRasterizer.clearPreviewRaster();
                     mainPanel.repaint();
                     previewOverlayPanel.repaint();
@@ -954,7 +1293,7 @@ public class App {
                         tmpPoly.constructPoint(tempPointB, selectedWidth, getLineSpace(), lineStep, isShiftPressed);
                         tmpPoly.constructPoint(polygon.getPoints().getFirst(), selectedWidth, getLineSpace(), lineStep, isShiftPressed);
 
-                        canvasRasterizer.rasterize(tmpPoly, true);
+                        canvasRasterizer.rasterizeOutline(tmpPoly, true);
                     }
                     break;
                 }
@@ -964,12 +1303,12 @@ public class App {
                     polygon.constructPoint(pointB, selectedWidth, getLineSpace(), lineStep, false);
 
                     if (polygon.getPoints().getFirst().equals(pointB)) {
-                        Polygon registeredPolygon = entityFactory.createPolygon(polygon);
+                        Polygon newPolygon = new Polygon(polygon);
 //                        for (Line polygonSegment : registeredPolygon.getLines()) {
 //                            polygonSegment.setColor(Color.GREEN);
 //                        }
 
-                        transferIntoRenderLayer(registeredPolygon);
+                        registerRenderCanvasEntity(newPolygon);
                         canvasRasterizer.clearPreviewRaster();
                         mainPanel.repaint();
                         previewOverlayPanel.repaint();
@@ -989,7 +1328,7 @@ public class App {
                     line = SnapLine(previewLine(pointA, tempPointB, true));
                     Rectangle rect = new Rectangle(line, selectedColor, selectedWidth, null);
 
-                    canvasRasterizer.rasterize(rect, true);
+                    canvasRasterizer.rasterizeOutline(rect, true);
                 }
 
                 if (pointB != null && pointA != null) { // Click – Move – Click
@@ -1002,11 +1341,11 @@ public class App {
                     frame.add(mainPanel, BorderLayout.CENTER);
                     line = SnapLine(finalLine(pointA, pointB, true));
 
-                    Rectangle rect = entityFactory.createRectangle(line, selectedColor, selectedWidth,null);
+                    Rectangle rect = new Rectangle(line, selectedColor, selectedWidth,null);
 
                     canvasRasterizer.clearPreviewRaster();
 
-                    transferIntoRenderLayer(rect);
+                    registerRenderCanvasEntity(rect);
 
 
                 }
@@ -1018,10 +1357,10 @@ public class App {
                 if (pointB == null && tempPointB != null && pointA != null) { // Click – Move – (Release /Click)
 //                    canvasRasterizer.clearPreviewRaster();
                     line = previewLine(pointA, tempPointB, true);
-                    System.out.println(selectedWidth);
+
                     Circle circle = new Circle(line, selectedColor, selectedWidth, lineStep, getLineSpace(), null);
                     System.out.println(circle.getBordersWidth());
-                    canvasRasterizer.rasterize(circle, true);
+                    canvasRasterizer.rasterizeOutline(circle, true);
 
                 }else{
 
@@ -1039,13 +1378,13 @@ public class App {
                         Circle circle = new Circle(line, selectedColor, selectedWidth,  lineStep, getLineSpace(),  null);
 
 
-                        for (Point point : circle.getTransformationAffectedPoints(draggedPoint))
-                        {
-                            canvasMap.addCanvasEntityPoint(point, circle);
-                        }
+//                        for (Point point : circle.getTransformationAffectedPoints(draggedPoint))
+//                        {
+//                            canvasMap.addCanvasEntityPoint(point, circle);
+//                        }
 
                         canvasRasterizer.clearPreviewRaster();
-                        transferIntoRenderLayer(circle);
+                        registerRenderCanvasEntity(circle);
 
                     }
                 }

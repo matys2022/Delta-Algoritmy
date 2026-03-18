@@ -26,7 +26,14 @@ public class InterfaceRasterizer implements ElementRasterizer {
         int startX = element.getX() + element.getMargin_left();
         int endX = element.getX() + element.getWidth() - element.getMargin_right();
 
-        boolean hasBorder = element.getBORDER() != null && element.getBORDER() != element.getBACKGROUND();
+
+        boolean hasBorder = element.getBORDER() != null
+                && element.getBORDER() != element.getBACKGROUND()
+                && (element.getPaddingRight() != 0
+                || element.getPaddingTop() != 0
+                || element.getPaddingBottom() != 0
+                || element.getPaddingLeft() != 0)
+                ;
 
         boolean hasBitmap = element instanceof BitmapElement;
 
@@ -63,21 +70,21 @@ public class InterfaceRasterizer implements ElementRasterizer {
                                         ( // Work only inside padding
                                                 (
                                                         x >= startX + element.getPaddingLeft()
-                                                                &&
-                                                                x <= endX - element.getPaddingRight() - 1
-                                                )
                                                         &&
-                                                        (
-                                                                y >= startY + element.getPaddingTop()
-                                                                        &&
-                                                                        y <= endY - element.getPaddingBottom() - 1
-                                                        )
+                                                        x <= endX - element.getPaddingRight() - 1
+                                                )
+                                                &&
+                                                (
+                                                        y >= startY + element.getPaddingTop()
+                                                        &&
+                                                        y <= endY - element.getPaddingBottom() - 1
+                                                )
                                         )
                                         &&
                                         (
                                                 ((BitmapElement) element).getBitmapContent().length > pixelY
-                                                        &&
-                                                        ((BitmapElement) element).getBitmapContent()[pixelY].length > pixelX
+                                                &&
+                                                ((BitmapElement) element).getBitmapContent()[pixelY].length > pixelX
                                         )
                                         &&
                                         ( // Check whether the pixel in the content bitmap is lit up
@@ -92,14 +99,14 @@ public class InterfaceRasterizer implements ElementRasterizer {
                                 hasBorder &&
                                         ( // Left and right borders
                                                 x <= startX + element.getLeftBorderWidth() // Left border
-                                                        ||
-                                                        x >= endX - element.getRightBorderWidth() - 1// Right border
+                                                ||
+                                                x >= endX - element.getRightBorderWidth() - 1// Right border
                                         )
                                         ||
                                         ( // Bottom and top borders
                                                 y <= startY + element.getTopBorderWidth() // Top border
-                                                        ||
-                                                        y >= endY - element.getBottomBorderWidth() - 1// Bottom border
+                                                ||
+                                                y >= endY - element.getBottomBorderWidth() - 1// Bottom border
                                         )
                         ) {
                             color = element.getBORDER();
