@@ -156,7 +156,7 @@ public abstract class Element {
 
     public void setCoordinates(int x, int y){
         this.coordinates = new Coordinates(x, y);
-        System.out.println("set coordinates : " + this.getClass().getSimpleName() + " x/y" + x + " : " + y);
+//        System.out.println("set coordinates : " + this.getClass().getSimpleName() + " x/y" + x + " : " + y);
     }
 
     public void setCoordinates(Coordinates coordinates){

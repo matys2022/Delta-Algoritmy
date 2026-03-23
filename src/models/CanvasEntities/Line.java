@@ -2,7 +2,6 @@ package models.CanvasEntities;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class Line extends CanvasLine implements CanvasEntity, ComplexCanvasEntity{
@@ -38,7 +37,7 @@ public class Line extends CanvasLine implements CanvasEntity, ComplexCanvasEntit
     }
 
     @Override
-    public void addVisiblePoints(Collection<Point> point){
+    public void addVisiblePoints(ArrayList<Point> point){
         visiblePoints.addAll(point);
     }
 

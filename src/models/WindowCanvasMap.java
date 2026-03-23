@@ -1,13 +1,12 @@
 package models;
 
-import models.CanvasEntities.CanvasEntity;
 import models.CanvasEntities.ComplexCanvasEntity;
 import models.CanvasEntities.Point;
 
 import java.util.*;
 
 public class WindowCanvasMap {
-    private final CanvasMapPair[][] baseMap;
+    private CanvasMapPair[][] baseMap;
     private final int width;
     private final int height;
 
@@ -20,6 +19,14 @@ public class WindowCanvasMap {
         this.height = height;
         baseMap = new CanvasMapPair[height][width];
         stackMap = new HashMap<>();
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getWidth() {
+        return width;
     }
 
     private long nextId = 0;
@@ -62,6 +69,77 @@ public class WindowCanvasMap {
     public void addCanvasEntityPoint(Point point, ComplexCanvasEntity canvasEntity) {
         addCanvasEntityPoint(point.getX(),point.getY(), canvasEntity);
     }
+
+    public void clear(){
+        this.baseMap = new CanvasMapPair[height][width];
+    }
+
+
+    public boolean isBoundary(Point p){
+        if (hasEntity(p.getX(), p.getY())) {
+            return false;
+        }
+
+        int[][] neighbours = {{1,0}, {0,1}, {-1,0}, {0,-1}};
+
+        for (int[] n : neighbours) {
+            int nx = p.getX() + n[0];
+            int ny = p.getY() + n[1];
+
+            if (!isWithinBounds(nx, ny) || hasEntity(nx, ny)) {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+
+
+    public ArrayList<Point> getFloodPoints(Point start){
+        return this.getFloodPoints(start,null);
+    }
+
+    public ArrayList<Point> getFloodPoints(Point start, List<Point> boundaryPoints){
+        Set<Point> visited = new HashSet<>();
+        Queue<Point> queue = new LinkedList<>();
+
+        int[][] dirs = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+
+        queue.add(start);
+        visited.add(start);
+
+        while (!queue.isEmpty()) {
+            Point current = queue.poll();
+
+            for (int[] d : dirs) {
+                int nx = current.getX() + d[0];
+                int ny = current.getY() + d[1];
+
+                if (!this.isWithinBounds(nx, ny)) continue;
+
+                Point next = new Point(nx, ny);
+
+                if(boundaryPoints == null){
+                    if(hasEntity(nx, ny)){
+                        continue;
+                    }
+                }else if(boundaryPoints.contains(next)){
+                    continue;
+                }
+
+
+                if (!visited.contains(next)) {
+                    visited.add(next);
+                    queue.add(next);
+                }
+            }
+        }
+
+        return new ArrayList<>(visited);
+    }
+
 
     public ComplexCanvasEntity removeCanvasEntityPoint(ComplexCanvasEntity entity, int x, int y){
 //        try{
@@ -120,6 +198,7 @@ public class WindowCanvasMap {
     public ComplexCanvasEntity peekCanvasEntityPoint(Point point){
         return this.peekCanvasEntityPoint(point.getX(), point.getY());
     }
+
     public ComplexCanvasEntity peekCanvasEntityPoint(int x, int y){
         if(y > baseMap.length || x >  baseMap[0].length || y < 0 || x < 0){
             return null; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
@@ -136,6 +215,47 @@ public class WindowCanvasMap {
         }
 
         return stackMap.get(canvasPoint.getId()).getLast(); // More than one canvas entity point exists for the requested coordinates
+    }
+
+
+    public List<ComplexCanvasEntity> getCanvasEntities(int x, int y){
+        List<ComplexCanvasEntity> canvasEntities = new ArrayList<>();
+
+        if(!isWithinBounds(x, y)){
+            return null; // Point is out of the window bounds, thus it doesn't make any sense to retain its reference
+        }
+
+        CanvasMapPair canvasPoint = baseMap[y][x];
+
+        if(canvasPoint == null){ // Point is not associated with any canvas entity
+            return null;
+        }
+
+        if(canvasPoint.getId() == -1){ // There is just a single entity point at the requested coordinates
+            canvasEntities.add(canvasPoint.getCanvasEntity());
+        }
+        ArrayList<ComplexCanvasEntity> entities = stackMap.get(canvasPoint.getId());
+
+        if(entities != null){
+            canvasEntities.addAll(entities);
+        }
+        return canvasEntities;
+
+    }
+
+    public boolean containsEntity(int x, int y, ComplexCanvasEntity entity){
+        if(!this.hasEntity(x, y)){
+            return true;
+        }
+
+        CanvasMapPair canvasPoint = baseMap[y][x];
+
+        if(canvasPoint.getId() == -1){ // There is just a single entity point at the requested coordinates
+            return canvasPoint.getCanvasEntity().equals(entity);
+        }
+
+        return stackMap.get(canvasPoint.getId()).contains(entity); // More than one canvas entity point exists for the requested coordinates
+
     }
 
 

@@ -14,42 +14,62 @@ public class CanvasRasterizer {
 
     public LineRasterizer lineRasterizer;
     public CircleRasterizer circleRasterizer;
-    public InfillRasterizer infillRasterizer;
+    public FillRasterizer fillRasterizer;
     public final WindowCanvasMap canvasMap;
 
-    public CanvasRasterizer(int  width, int height) {
+    public CanvasRasterizer(int  width, int height, WindowCanvasMap  map) {
         previewRaster = new RasterBufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);;
         renderRaster = new RasterBufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         lineRasterizer = new LineRasterizer();
         circleRasterizer = new CircleRasterizer();
-        infillRasterizer = new InfillRasterizer();
+        fillRasterizer = new FillRasterizer();
 
-        canvasMap = new WindowCanvasMap(width, height);
+        canvasMap = map;
     }
 
-    public void rasterizeOutline(ComplexCanvasEntity entity, boolean preview){
+
+
+    public void rasterize(ComplexCanvasEntity entity, boolean preview){
+        if(entity instanceof FillEntity fillEntity){
+//            System.out.println("Points to be filled (Debug) rasterize service: " + canvasMap.getFloodPoints(fillEntity.getFillReferencePoint()).size());
+        }
+
         this.clearPreviewRaster();
         Raster raster = preview?previewRaster:renderRaster;
-//        System.out.println("Rasterizing : " + entity.getClass().getName());
         entity.clearVisiblePoints();
 
         switch (entity) {
             case Line line -> {
 
                 ArrayList<Point> points = lineRasterizer.rasterize(line, raster, canvasMap);
-                line.addVisiblePoints(points);
+                if(!preview){
+                    line.addVisiblePoints(points);
+                }
             }
             case PolygonEntity polygon -> {
+//                entity.clearVisiblePoints();
                 for (Line line : polygon.getLines()) {
                     ArrayList<Point> points = lineRasterizer.rasterize(line, raster, canvasMap);
-                    polygon.addVisiblePoints(points);
+                    if(!preview){
+                        polygon.addVisiblePoints(points);
+                    }
                 }
             }
             case Circle circle -> {
+//                entity.clearVisiblePoints();
                 ArrayList<Point> points = circleRasterizer.rasterize(circle, raster, canvasMap);
 //                System.out.println(circle.getSpace() + " " + circle.getStep());
-                circle.addVisiblePoints(points);
+                if(!preview){
+                    circle.addVisiblePoints(points);
+                }
+            }
+            case FillEntity fill -> {
+
+                ArrayList<Point> points = fillRasterizer.rasterize(fill, raster, canvasMap);
+                if(!preview){
+                    fill.addVisiblePoints(points);
+                }
             }
             default -> {
             }
@@ -58,17 +78,17 @@ public class CanvasRasterizer {
 
     }
 
-    public void rasterizeInfill(ComplexCanvasEntity entity, boolean preview){
-
-        Raster raster = preview?previewRaster:renderRaster;
-        entity.clearVisiblePoints();
-
-        if(entity instanceof CanvasShape shp) {
-            shp.clearFillPoints();
-            ArrayList<Point> points = infillRasterizer.rasterize(entity, raster, canvasMap);
-            entity.addVisiblePoints(points);
-        }
-    }
+//    public void rasterizeInfill(ComplexCanvasEntity entity, boolean preview){
+//
+//        Raster raster = preview?previewRaster:renderRaster;
+//        entity.clearVisiblePoints();
+//
+//        if(entity instanceof CanvasShape shp) {
+//            shp.clearFillPoints();
+//            Collection<Point> points = fillRasterizer.rasterize(entity, raster, canvasMap);
+//            entity.addVisiblePoints(points);
+//        }
+//    }
 
 
     public Raster getRenderRaster() {

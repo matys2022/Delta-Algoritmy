@@ -1,10 +1,7 @@
 package models.CanvasEntities;
 
-import com.sun.source.tree.CaseTree;
-
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
 
 public class Circle extends CanvasShape implements CanvasEntity, ComplexCanvasEntity {
 
@@ -67,7 +64,7 @@ public class Circle extends CanvasShape implements CanvasEntity, ComplexCanvasEn
         visiblePoints.add(point);
     }
 
-    public void addVisiblePoints(Collection<Point> point){
+    public void addVisiblePoints(ArrayList<Point> point){
         visiblePoints.addAll(point);
     }
 

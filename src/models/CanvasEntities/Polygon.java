@@ -2,7 +2,6 @@ package models.CanvasEntities;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class Polygon extends CanvasShape implements CanvasEntity, PolygonEntity{
@@ -73,7 +72,7 @@ public class Polygon extends CanvasShape implements CanvasEntity, PolygonEntity{
         visiblePoints.add(point);
     }
 
-    public void addVisiblePoints(Collection<Point> point){
+    public void addVisiblePoints(ArrayList<Point> point){
         visiblePoints.addAll(point);
     }
 

@@ -5,7 +5,6 @@ import models.CanvasEntities.Point;
 import models.WindowCanvasMap;
 import rasters.Raster;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class LineRasterizer implements Rasterizer<Line> {
@@ -20,8 +19,8 @@ public class LineRasterizer implements Rasterizer<Line> {
         Point b = new Point(line.getPointB());
         ArrayList<Point> visiblePoints = new ArrayList<>();
 
-        canvasMap.addCanvasEntityPoint(a, line);
-        canvasMap.addCanvasEntityPoint(b, line);
+//        canvasMap.addCanvasEntityPoint(a, line);
+//        canvasMap.addCanvasEntityPoint(b, line);
 
         int diffX = b.getX() - a.getX();
         int diffY = b.getY() - a.getY();

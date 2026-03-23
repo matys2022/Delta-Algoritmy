@@ -1,6 +1,5 @@
 package rasterizers;
 
-import models.CanvasEntities.CanvasEntity;
 import models.CanvasEntities.Circle;
 import models.CanvasEntities.Point;
 import models.WindowCanvasMap;

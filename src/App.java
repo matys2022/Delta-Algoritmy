@@ -1,4 +1,4 @@
-import factories.CanvasEntityFactory;
+//import factories.CanvasEntityFactory;
 import models.*;
 import models.CanvasEntities.*;
 import models.CanvasEntities.Point;
@@ -8,6 +8,7 @@ import models.InterfaceEntities.*;
 import models.InterfaceEntities.Button;
 import models.InterfaceEntities.MenuBar;
 import rasterizers.CanvasRasterizer;
+import rasterizers.FillRasterizer;
 import rasterizers.InterfaceRasterizer;
 import rasters.Raster;
 
@@ -18,12 +19,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serial;
-import java.util.ArrayList;
+import java.util.*;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -44,7 +42,7 @@ public class App {
     private final CanvasRasterizer canvasRasterizer;
     private final InterfaceRasterizer interfaceRasterizer;
 //
-    private final CanvasEntityFactory entityFactory;
+//    private final CanvasEntityFactory entityFactory;
     private final WindowCanvasMap canvasMap;
 //
     private final ArrayList<ComplexCanvasEntity> canvasEntities;
@@ -100,12 +98,18 @@ public class App {
         canvasRasterizer.clearRenderRaster();
         DrawInterface();
 
+        ArrayList<FillEntity> fillEntities = new ArrayList<>();
         for(ComplexCanvasEntity canvasEntity : canvasEntities){
-            canvasRasterizer.rasterizeOutline(canvasEntity, false);
-            canvasRasterizer.rasterizeInfill(canvasEntity, false);
+            if(canvasEntity instanceof FillEntity fill){
+                fillEntities.add(fill);
+            }else{
+                canvasRasterizer.rasterize(canvasEntity, false);
+            }
         };
 
-
+        for(FillEntity fillEntity : fillEntities){
+            canvasRasterizer.rasterize(fillEntity, false);
+        }
 
         mainPanel.repaint();
     }
@@ -117,16 +121,32 @@ public class App {
         }
 
         refreshRenderCanvas();
-        canvasRasterizer.rasterizeOutline(canvasEntity, true);
+        canvasRasterizer.rasterize(canvasEntity, true);
     }
 
     public void transferIntoRenderLayer(ComplexCanvasEntity canvasEntity){
         canvasEntities.add(canvasEntity);
-        canvasRasterizer.rasterizeOutline(canvasEntity, false);
+
+        if(canvasEntity instanceof FillEntity fillEntity){
+//            System.out.println("Points to be filled (Debug) after: " + canvasMap.getFloodPoints(fillEntity.getFillReferencePoint()).size());
+//            FillRasterizer fillRasterizer = new FillRasterizer();
+//            fillRasterizer.rasterize(fillEntity, this.canvasRasterizer.renderRaster, this.canvasMap);
+
+        }
+        canvasRasterizer.rasterize(canvasEntity, false);
+
+        if(canvasEntity instanceof FillEntity fillEntity){
+//            System.out.println("Points to be filled (Debug) after: " + canvasMap.getFloodPoints(fillEntity.getFillReferencePoint()).size());
+        }
     }
 
     public void registerRenderCanvasEntity(ComplexCanvasEntity canvasEntity){
+        if(canvasEntity instanceof FillEntity fillEntity){
+//            System.out.println("Points to be filled (Debug) before transfer: " + canvasMap.getFloodPoints(fillEntity.getFillReferencePoint()).size());
+        }
         transferIntoRenderLayer(canvasEntity);
+
+
 
         for (Point point : canvasEntity.getVisiblePoints()) {
             canvasMap.addCanvasEntityPoint(point.getX(), point.getY(), canvasEntity);
@@ -146,9 +166,10 @@ public class App {
 
         WindowInterfaceMap.map = new Element[height][width];
         canvasMap = new WindowCanvasMap(windowWidth, windowHeight);
+        canvasRasterizer = new CanvasRasterizer(windowWidth, windowHeight, canvasMap);
         canvasEntities = new ArrayList<>();
 
-        entityFactory = new CanvasEntityFactory(canvasMap);
+//        entityFactory = new CanvasEntityFactory(canvasMap);
 
 
         frame = new JFrame();
@@ -158,7 +179,7 @@ public class App {
         frame.setResizable(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 //
-        canvasRasterizer = new CanvasRasterizer(windowWidth, windowHeight);
+
 //        raster = new RasterBufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 //        rasterPreview = new RasterBufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
@@ -917,6 +938,7 @@ public class App {
         draggedEntity = null;
         canvasEntities.clear();
         currentPolygon = null;
+        canvasMap.clear();
 
         switchEditMode(EditMode.Normal);
         canvasRasterizer.clearRenderRaster();
@@ -970,28 +992,21 @@ public class App {
         System.out.println(this.originPoint == null);
     }
 
-    private boolean isBoundary(Point p){
-        if (canvasMap.hasEntity(p.getX(), p.getY())) {
-            return false;
-        }
 
-        int[][] neighbours = {{1,0}, {0,1}, {-1,0}, {0,-1}};
 
-        for (int[] n : neighbours) {
-            int nx = p.getX() + n[0];
-            int ny = p.getY() + n[1];
 
-            if (!canvasMap.isWithinBounds(nx, ny) || isFilled(nx, ny)) {
-                return true;
+
+    public ComplexCanvasEntity getMostPropableEntity(Map<ComplexCanvasEntity, Integer> surroundingEntities){
+        int maxAppearance = Integer.MIN_VALUE;
+        ComplexCanvasEntity foundEntity = null;
+        for(ComplexCanvasEntity entity : surroundingEntities.keySet()){
+            int appearance = surroundingEntities.get(entity);
+            if(appearance > maxAppearance){
+                maxAppearance = appearance;
+                foundEntity = entity;
             }
         }
-
-        return false;
-
-    }
-
-    private boolean isFilled(int x, int y) {
-        return canvasMap.peekCanvasEntityPoint(x, y) != null;
+        return foundEntity;
     }
 
     public void DrawCanvas() {
@@ -1016,7 +1031,7 @@ public class App {
 
                                 int maxRadius = 15;
 
-                                if (canvasMap.peekCanvasEntityPoint(centerX, centerY) != null) {
+                                if (canvasMap.hasEntity(centerX, centerY)) {
 //                                    this.draggedEntity = canvasMap.peekCanvasEntityPoint(centerX, centerY);
                                     setMovedEntity(centerX, centerY);
                                 }
@@ -1044,7 +1059,10 @@ public class App {
                                     System.out.println("No entity found : NULL");
                                 }
 
+                                System.out.println("Before refresh");
                                 refreshRenderCanvas();
+                                System.out.println("After refresh");
+
 
                             }
 
@@ -1058,7 +1076,7 @@ public class App {
                                     py = previousRelativePoint.getY();
                                 }
 
-                                System.out.println((tempPointB.getX() - originPoint.getX()) + " " + (tempPointB.getY() - originPoint.getY()));
+//                                System.out.println((tempPointB.getX() - originPoint.getX()) + " " + (tempPointB.getY() - originPoint.getY()));
                                 this.previousRelativePoint = new Point(tmpPoint);
 
 
@@ -1078,9 +1096,9 @@ public class App {
                                 // Mouse moved
                                 if (tempPointB != null) {
                                     this.draggedEntity.move(tmpPoint.getX() - px, tmpPoint.getY() - py);
-                                    System.out.println((tempPointB.getX() - originPoint.getX()) + " " + (tempPointB.getY() - originPoint.getY()));
+//                                    System.out.println((tempPointB.getX() - originPoint.getX()) + " " + (tempPointB.getY() - originPoint.getY()));
                                     canvasRasterizer.clearPreviewRaster();
-                                    canvasRasterizer.rasterizeOutline(draggedEntity, true);
+                                    canvasRasterizer.rasterize(draggedEntity, true);
                                     this.previousRelativePoint = new Point(tmpPoint);
                                     previewOverlayPanel.repaint();
                                 }
@@ -1158,7 +1176,7 @@ public class App {
                             if (tempPointB != null && draggedPoint != null && draggedEntity != null) { //
                                 draggedEntity.modifyPoint(draggedPoint, tempPointB.getX(), tempPointB.getY());
                                 canvasRasterizer.clearPreviewRaster();
-                                canvasRasterizer.rasterizeOutline(draggedEntity, true);
+                                canvasRasterizer.rasterize(draggedEntity, true);
 
                                 previewOverlayPanel.repaint();
                             }
@@ -1169,62 +1187,29 @@ public class App {
                             if (pointA != null) {
                                 // Find valid boundary start
                                 Point start = new Point(pointA);
-                                Set<ComplexCanvasEntity> surroundingEntities = new HashSet<>();
-                                Set<Point> visited = new HashSet<>();
-                                Queue<Point> queue = new LinkedList<>();
-
-                                int[][] dirs = {{1,0}, {-1,0}, {0,1}, {0,-1}};
-
-                                queue.add(pointA);
-                                visited.add(pointA);
-
-                                while (!queue.isEmpty()) {
-                                    Point current = queue.poll();
-
-                                    for (int[] d : dirs) {
-                                        int nx = current.getX() + d[0];
-                                        int ny = current.getY() + d[1];
-
-                                        if (!canvasMap.isWithinBounds(nx, ny)) continue;
-
-                                        Point next = new Point(nx, ny);
-
-                                        // If it's a filled pixel → collect entity
-                                        if (canvasMap.hasEntity(nx, ny)) {
-                                            ComplexCanvasEntity entity = canvasMap.peekCanvasEntityPoint(nx, ny);
-                                            if (entity != null) {
-                                                surroundingEntities.add(entity);
-                                            }
-                                            continue;
-                                        }
-
-                                        // Otherwise continue flood fill
-                                        if (!visited.contains(next)) {
-                                            visited.add(next);
-                                            queue.add(next);
+                                List<ComplexCanvasEntity> pointEntities = canvasMap.getCanvasEntities(start.getX(), start.getY());
+                                FillEntity fillEntity = null;
+                                if(pointEntities != null){
+                                    for (ComplexCanvasEntity pointEntity : pointEntities) {
+                                        if(pointEntity instanceof FillEntity fill) {
+                                            fillEntity = fill;
+                                            break;
                                         }
                                     }
                                 }
 
-
-                                for(ComplexCanvasEntity entity : surroundingEntities) {
-                                    if(entity instanceof PolygonEntity plgEntity && entity instanceof CanvasShape shp){
-                                        if(plgEntity.isPointInPolygon(pointA)){
-                                            shp.setHasFill(true);
-                                            Point plg = shp.getClosestPoint(pointA.getX(), pointA.getY());
-                                            shp.addFillPoint(plg);
-                                        }
-                                    }
-                                    if(entity instanceof  Circle crl){
-                                        if(crl.isPointInCircle(pointA)){
-                                            crl.setHasFill(true);
-                                            Point cls = crl.getClosestPoint(pointA.getX(), pointA.getY());
-                                            crl.addFillPoint(cls);
-                                        }
-                                    }
+                                if(fillEntity != null) {
+                                    fillEntity.setInfill(selectedColor);
+                                    fillEntity.setFillReferencePoint(start);
+                                    break;
                                 }
 
-                                refreshRenderCanvas();
+                                ArrayList<Point> floodPoints = canvasMap.getFloodPoints(start);
+                                FillEntity fill = new FillEntity(FilterBoundaryPoints(floodPoints), start, selectedColor);
+
+                                registerRenderCanvasEntity(fill);
+
+                                pointA = null;
 
                             }
 
@@ -1235,13 +1220,17 @@ public class App {
                             if (pointA != null) {
                                 Point tmpPoint = new Point(pointA);
                                 pointA = null;
-                                CanvasEntity foundEntity = canvasMap.peekCanvasEntityPoint(tmpPoint.getX(), tmpPoint.getY());
+                                ComplexCanvasEntity foundEntity = canvasMap.peekCanvasEntityPoint(tmpPoint.getX(), tmpPoint.getY());
                                 if (foundEntity != null) {
                                     canvasEntities.remove(foundEntity);
+
+                                    for(Point visiblePoint : foundEntity.getVisiblePoints()){
+                                        canvasMap.removeCanvasEntityPoint(foundEntity,  visiblePoint.getX(), visiblePoint.getY());
+                                    }
                                 }
 
                             }
-                        }
+                        }break;
 
                     }
 
@@ -1253,7 +1242,7 @@ public class App {
                     System.out.println(line.getBordersWidth());
                     line = SnapLine(line);
                     System.out.println(line.getBordersWidth());
-                    canvasRasterizer.rasterizeOutline(line, true);
+                    canvasRasterizer.rasterize(line, true);
                 }
 
 
@@ -1293,7 +1282,7 @@ public class App {
                         tmpPoly.constructPoint(tempPointB, selectedWidth, getLineSpace(), lineStep, isShiftPressed);
                         tmpPoly.constructPoint(polygon.getPoints().getFirst(), selectedWidth, getLineSpace(), lineStep, isShiftPressed);
 
-                        canvasRasterizer.rasterizeOutline(tmpPoly, true);
+                        canvasRasterizer.rasterize(tmpPoly, true);
                     }
                     break;
                 }
@@ -1317,7 +1306,7 @@ public class App {
                     }
 
                 } else {
-                    polygon = entityFactory.createPolygon(pointA, selectedColor, selectedWidth, null);
+                    polygon = new Polygon(pointA, selectedColor, selectedWidth, null);
                     polygon.constructPoint(pointB, selectedWidth, getLineSpace(), lineStep, false);
                 }
 
@@ -1328,7 +1317,7 @@ public class App {
                     line = SnapLine(previewLine(pointA, tempPointB, true));
                     Rectangle rect = new Rectangle(line, selectedColor, selectedWidth, null);
 
-                    canvasRasterizer.rasterizeOutline(rect, true);
+                    canvasRasterizer.rasterize(rect, true);
                 }
 
                 if (pointB != null && pointA != null) { // Click – Move – Click
@@ -1350,8 +1339,7 @@ public class App {
 
                 }
 
-            }
-            break;
+            }break;
             case Circle: {
 
                 if (pointB == null && tempPointB != null && pointA != null) { // Click – Move – (Release /Click)
@@ -1360,7 +1348,7 @@ public class App {
 
                     Circle circle = new Circle(line, selectedColor, selectedWidth, lineStep, getLineSpace(), null);
                     System.out.println(circle.getBordersWidth());
-                    canvasRasterizer.rasterizeOutline(circle, true);
+                    canvasRasterizer.rasterize(circle, true);
 
                 }else{
 
@@ -1393,7 +1381,16 @@ public class App {
 
             }break;
         }
+    }
 
+    public ArrayList<Point> FilterBoundaryPoints(Collection<Point> points){
+        ArrayList<Point> result = new ArrayList<>();
+        for (Point point : points){
+            if(canvasMap.isBoundary(point)){
+                result.add(point);
+            }
+        }
+        return result;
     }
 
     public void switchTemporaryPanel(){
